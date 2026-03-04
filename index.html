@@ -5,397 +5,444 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Пять Ночей С Добрым Дядькой</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
-        body, html { width: 100vw; height: 100vh; background-color: black; overflow: hidden; font-family: sans-serif; }
-        
-        /* Стили слоев */
-        #game-container { position: relative; width: 100%; height: 100%; display: none; }
-        .fullscreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
-        
-        /* Экраны */
-        #disclaimer, #loading, #win-screen, #game-over-screen {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: black; color: white; display: flex; align-items: center; 
-            justify-content: center; text-align: center; padding: 20px; z-index: 100;
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background: black; color: white; overflow: hidden;
+            font-family: sans-serif; user-select: none;
         }
-        #disclaimer { opacity: 0; transition: opacity 1s; cursor: pointer; display: none; }
-        #win-screen { flex-direction: column; display: none; opacity: 0; transition: opacity 1s; }
-        #game-over-screen { display: none; }
 
-        /* Игровые элементы */
-        #office { z-index: 1; }
-        #mask-overlay { z-index: 10; display: none; top: -100%; transition: top 0.3s ease-out; }
-        #tablet-overlay { z-index: 5; display: none; top: 100%; transition: top 0.3s ease-out; }
+        #game-container { position: relative; width: 100vw; height: 100vh; }
+
+        .screen {
+            position: absolute; width: 100%; height: 100%;
+            display: none; justify-content: center; align-items: center;
+            flex-direction: column; text-align: center;
+        }
+
+        #loading-screen { display: flex; z-index: 100; }
         
-        /* Интерфейс камеры/шкатулки */
-        #tablet-ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 6; display: none; }
-        .music-box-container {
-            position: absolute; bottom: 15%; right: 5%; display: flex; align-items: center; gap: 10px;
+        #disclaimer-screen { z-index: 90; background: black; padding: 20px; box-sizing: border-box; }
+        #disclaimer-screen p { max-width: 90%; font-size: 1.1rem; margin: 10px auto; }
+        
+        #office-screen { z-index: 10; background-size: cover; background-position: center; transition: filter 2s ease-in-out; }
+        
+        .fade-in { animation: fadeIn 1.5s forwards; opacity: 0; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        #mask-img {
+            position: absolute; width: 100%; height: 100%; top: -100%;
+            z-index: 50; transition: top 0.4s ease-in-out; pointer-events: none;
+        }
+        #tablet-img {
+            position: absolute; width: 100%; height: 100%; bottom: -100%;
+            z-index: 40; transition: bottom 0.4s ease-in-out; pointer-events: none;
+        }
+
+        .ui-btn {
+            position: absolute; bottom: 20px; width: 35%; height: 80px;
+            z-index: 60; border-radius: 10px; display: flex;
+            justify-content: center; align-items: center; cursor: pointer;
+        }
+        #btn-mask {
+            left: 5%; border: 4px solid red; background: rgba(255, 0, 0, 0.1);
+        }
+        #btn-tablet {
+            right: 5%; border: 4px solid gray; background: rgba(128, 128, 128, 0.1);
+        }
+        .arrow-draw { width: 30px; height: 30px; border-top: 5px solid; border-left: 5px solid; transform: rotate(45deg); margin-top: 10px; }
+        .red-arrow { border-color: red; }
+        .gray-arrow { border-color: gray; }
+
+        #music-box-ui {
+            position: absolute; bottom: 100px; right: 20px;
+            display: none; flex-direction: column; align-items: center; z-index: 45;
         }
         #wind-up-btn {
-            width: 60px; height: 60px; background: transparent; border: 3px solid #ccc;
-            color: white; font-weight: bold; font-size: 10px; text-transform: uppercase;
-            cursor: pointer; text-align: center; line-height: 1.2;
+            width: 120px; height: 60px; border: 3px solid white; background: gray;
+            color: white; font-weight: bold; text-align: center; font-size: 12px;
+            border-radius: 5px; margin-bottom: 10px;
         }
-        #music-box-circle {
-            width: 40px; height: 40px; border-radius: 50%; border: 2px solid white;
+        #music-circle {
+            width: 50px; height: 50px; border-radius: 50%;
             background: conic-gradient(white 100%, transparent 0);
+            border: 2px solid white;
         }
 
-        /* Кнопки управления (Маска и Планшет) */
-        .control-btn {
-            position: absolute; bottom: 3%; width: 35%; height: 50px; 
-            background: transparent; cursor: pointer; z-index: 20;
+        #jumpscare-container {
+            position: absolute; width: 100%; height: 100%; z-index: 200;
+            display: none; background: transparent;
         }
-        #mask-btn { left: 5%; border: 3px solid red; display: flex; align-items: center; justify-content: center; }
-        #mask-btn::before, #mask-btn::after {
-            content: ''; border: solid red; border-width: 0 3px 3px 0; display: inline-block;
-            padding: 5px; transform: rotate(-135deg); margin: 0 5px;
-        }
-        #tablet-btn { right: 5%; border: 3px solid white; display: flex; align-items: center; justify-content: center; }
-        #tablet-btn::before {
-            content: ''; width: 20px; height: 15px; border: 2px solid white; display: inline-block;
-        }
-
-        /* Часы */
-        #clock {
-            position: absolute; top: 3%; right: 5%; z-index: 15; color: white;
-            text-align: right; font-weight: bold; font-size: 24px; text-shadow: 2px 2px 0 #000;
-        }
-
-        /* Скримеры и эффекты */
-        #jumpscare-rabbit, #jumpscare-uncle {
-            z-index: 50; display: none; bottom: -100%; top: auto; transition: bottom 0.2s ease-out;
+        #jumpscare-img { 
+            position: absolute; bottom: -100%; left: 50%; 
+            transform: translateX(-50%) scale(1); width: 120%; 
+            transition: bottom 0.1s, transform 0.5s ease-in; 
         }
         .shake { animation: shake 0.1s infinite; }
-        @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 10% { transform: translate(-1px, -2px) rotate(-1deg); } 20% { transform: translate(-3px, 0px) rotate(1deg); } 30% { transform: translate(3px, 2px) rotate(0deg); } 40% { transform: translate(1px, -1px) rotate(1deg); } 50% { transform: translate(-1px, 2px) rotate(-1deg); } 60% { transform: translate(-3px, 1px) rotate(0deg); } 70% { transform: translate(3px, 1px) rotate(-1deg); } 80% { transform: translate(-1px, -1px) rotate(1deg); } 90% { transform: translate(1px, 2px) rotate(0deg); } 100% { transform: translate(1px, -2px) rotate(-1deg); } }
+        @keyframes shake { 0% { left: 49%; } 100% { left: 51%; } }
 
         #flash-overlay {
-            position: absolute; top:0; left:0; width:100%; height:100%; z-index: 60;
-            background: white; opacity: 0; pointer-events: none; transition: opacity 0.1s;
+            position: absolute; width: 100%; height: 100%; z-index: 300;
+            background: white; display: none;
         }
-        #black-overlay {
-            position: absolute; top:0; left:0; width:100%; height:100%; z-index: 61;
-            background: black; opacity: 0; pointer-events: none; transition: opacity 3s;
-        }
-        .rapid-blink { animation: blink 0.1s infinite; }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; background: black;} }
+
+        #time-display { position: absolute; top: 10px; right: 10px; font-size: 24px; font-weight: bold; z-index: 70; }
+        #night-display { position: absolute; top: 40px; right: 10px; font-size: 18px; z-index: 70; }
     </style>
 </head>
 <body>
 
-    <div id="loading">Загрузка ресурсов...</div>
-    <div id="disclaimer">
-        Предупреждение: Игра имеет яркие вспышки и неожиданные моменты такие как скримеры. Играйте на своём страхе и риске.<br><br>Тапните на экран, чтобы начать игру.
+<div id="game-container">
+    <div id="loading-screen" class="screen">
+        <h2 id="load-text">Загрузка Ресурсов. Это займёт считанные секунды. — 0%</h2>
     </div>
 
-    <div id="game-container">
-        <img id="office" class="fullscreen" src="https://www.dropbox.com/scl/fi/wrfdr2xng26o3vd62izae/Picsart_26-03-03_12-08-20-386.png?rlkey=7pmdyf6pty02uy2fo8zpa4cb0&st=61w2xyj8&raw=1">
+    <div id="disclaimer-screen" class="screen">
+        <div class="fade-in">
+            <p>Предупреждение: Игра имеет яркие вспышки и неожиданные моменты такие как скримеры. Играйте на своём страхе и риске.</p>
+            <p>Тапните на экран, чтобы начать игру.</p>
+        </div>
+    </div>
+
+    <div id="office-screen" class="screen">
+        <div id="time-display">0:00 Часов</div>
+        <div id="night-display">1 Ночь</div>
         
-        <div id="clock">
-            <div id="time-display">0:00 Часов</div>
-            <div style="font-size: 16px;">1 Ночь</div>
+        <img id="mask-img" src="https://www.dropbox.com/scl/fi/rybmw97y2ceswqck6y622/Picsart_26-03-03_12-10-54-417.png?rlkey=xdy6bz2ywvjneb3hjhu57h7mq&dl=1">
+        <img id="tablet-img" src="https://www.dropbox.com/scl/fi/d4utblxhiwi4n7le7c2zi/Picsart_26-03-03_12-19-01-880.png?rlkey=p8pe810y62czpu06srttz6zis&dl=1">
+
+        <div id="music-box-ui">
+            <div id="music-circle"></div>
+            <button id="wind-up-btn">Ускорить Музыку</button>
         </div>
 
-        <div id="mask-btn" class="control-btn" onclick="toggleMask()"></div>
-        <div id="tablet-btn" class="control-btn" onclick="toggleTablet()"></div>
-
-        <img id="mask-overlay" class="fullscreen" src="https://www.dropbox.com/scl/fi/rybmw97y2ceswqck6y622/Picsart_26-03-03_12-10-54-417.png?rlkey=xdy6bz2ywvjneb3hjhu57h7mq&st=q1vg6fll&raw=1">
-        <img id="tablet-overlay" class="fullscreen" src="https://www.dropbox.com/scl/fi/d4utblxhiwi4n7le7c2zi/Picsart_26-03-03_12-19-01-880.png?rlkey=p8pe810y62czpu06srttz6zis&st=b6cu6efs&raw=1">
-
-        <div id="tablet-ui">
-            <div class="music-box-container">
-                <div id="music-box-circle"></div>
-                <div id="wind-up-btn" onclick="windUpBox()">Ускорить<br>Музыку</div>
-            </div>
+        <div id="btn-mask" class="ui-btn">
+            <div class="arrow-draw red-arrow"></div><div class="arrow-draw red-arrow"></div>
         </div>
-
-        <img id="jumpscare-rabbit" class="fullscreen shake" src="https://www.dropbox.com/scl/fi/zdwojmpsz3mf2ie4f1jwj/Picsart_26-02-25_19-10-33-922.png?rlkey=e4l9uktjlvtl7h4du0v7gmluc&st=x7v3oqzl&raw=1">
-        <img id="jumpscare-uncle" class="fullscreen shake" src="https://www.dropbox.com/scl/fi/3eur27q9f2p7ute1png7r/Picsart_26-03-03_12-22-39-720.png?rlkey=rbeioyze6j2qxoaaspe80xis9&st=uorrvawt&raw=1">
-
-        <div id="flash-overlay"></div>
-        <div id="black-overlay"></div>
+        <div id="btn-tablet" class="ui-btn">
+            <div class="arrow-draw gray-arrow"></div><div class="arrow-draw gray-arrow"></div>
+        </div>
     </div>
 
-    <img id="game-over-screen" class="fullscreen" src="https://www.dropbox.com/scl/fi/iqkzu93vquq47csykxtui/Picsart_26-03-03_00-36-45-629.jpg?rlkey=tmqle9p1rxag6k3n44nk5yd44&st=dhpks3kl&raw=1">
-    <div id="win-screen">
-        <h1 id="win-time" style="font-size: 48px; margin-bottom: 20px;">6:00</h1>
-        <p id="win-text" style="display: none;">Спасибо За Игру! Игра пока-что в ДЕМО версии, Следите за ТГ каналом ШТВ, возможно, Мы в скором времени выпустим обновление для игры.</p>
+    <div id="jumpscare-container">
+        <img id="jumpscare-img" src="">
+    </div>
+    <div id="flash-overlay"></div>
+
+    <div id="game-over-screen" class="screen" style="background: black;">
+        <img id="game-over-img" style="width: 100%; height: auto;">
     </div>
 
-    <script>
-        // --- АУДИО ---
-        const sounds = {
-            scarySpace: new Audio('https://www.dropbox.com/scl/fi/ydpjtx0tsg3cyoc53xkje/03.-Music-Track-Scary-Space.mp3?rlkey=i6akwkd0y0m03lsj5vynnmbgh&st=pe803b0p&raw=1'),
-            fan: new Audio('https://www.dropbox.com/scl/fi/b535jgn11ynl89bbizl4k/11.-Office-Fan.mp3?rlkey=6gzeo2amxejpnoiq91w6s8l3o&st=a7rh7pia&raw=1'),
-            maskOn: new Audio('https://www.dropbox.com/scl/fi/a0hvnxefp4sucs9jdyd6b/16.-Office-Mask-2.mp3?rlkey=fgguybvsq74uu5yk6xfcg2z76&st=ekybx9sg&raw=1'),
-            maskOff: new Audio('https://www.dropbox.com/scl/fi/p0s2b4y7sw52os06jo90x/15.-Office-Mask-1.mp3?rlkey=ss84iu6cgcz9h63o8ghc2c587&st=e3i8x9nu&raw=1'),
-            breathing: new Audio('https://www.dropbox.com/scl/fi/hp71jtko8sydk8rvb2ree/fnaf-2-mask-breathing.mp3?rlkey=gyum33p6jn4y2xqxiu9969z0b&st=qdfpfaa4&raw=1'),
-            camSound: new Audio('https://www.dropbox.com/scl/fi/x46rgpezdkfrigh0kti86/fnaf-open-camera-sound.mp3?rlkey=stri1wynmnvjeyjvqd2dcbx23&st=p6v1kbkx&raw=1'),
-            musicBoxRun: new Audio('https://www.dropbox.com/scl/fi/vpj6vx3ijjfdiwmqu3xet/music-box-fnaf-2.mp3?rlkey=wzgl889gsg9deuhwpuo4v8t3f&st=bxeyy7wl&raw=1'),
-            windUp: new Audio('https://www.dropbox.com/scl/fi/cmbjaswveyomddstctln4/22.-Music-Box-Wind-Up.mp3?rlkey=v70yn6gcyvhzo0l9j3stu7tgc&st=06nlm6ki&raw=1'),
-            jumpscare: new Audio('https://www.dropbox.com/scl/fi/uvstl54jeet6lydkywgjs/jumpscare-sound-fnaf-4.mp3?rlkey=g3qnn9ciocm4kxb4vvztvmq24&st=h1snssvq&raw=1'),
-            ringing: new Audio('https://www.dropbox.com/scl/fi/t3zw4b2gwjio4kmjr2e1q/dsaasdas.mp3?rlkey=ncu4p3treaq0khygc775zawro&st=rhorw1c7&raw=1'),
-            gameOver: new Audio('https://www.dropbox.com/scl/fi/wxzs6e486h45v96nteygk/2_5276355408896757892.ogg?rlkey=ngakjdr1nqqk2vpktxuyy8ggv&st=r1u1twur&raw=1'),
-            uncleSpawn1: new Audio('https://www.dropbox.com/scl/fi/x9os6vtrvpq4vtt3y1ysl/2_5276355408896757800.ogg?rlkey=j3rjny00gqmh9dxfz0inbpyuo&st=309zzdzr&raw=1'),
-            uncleSpawn2: new Audio('https://www.dropbox.com/scl/fi/w5jd926lkizm1vvshoah8/2_5276355408896757803.ogg?rlkey=kcqrufequ0g5yapfzhxtd1adl&st=5xo8mjbl&raw=1'),
-            uncleStatic: new Audio('https://www.dropbox.com/scl/fi/mh57vtkgueqtedj1pvt7s/fnaf-2-office-scan_gameover-static-extended-made-with-Voicemod.mp3?rlkey=cw9ky5ojpa4jwek4kr6uppwiu&st=wnjgoxgm&raw=1'),
-            uncleWord: new Audio('https://www.dropbox.com/scl/fi/nc70fxr93w3jg4qeirs4s/2_5276355408896757796.ogg?rlkey=oz8qj2d7epb25r071qok7og0a&st=qa5nbyau&raw=1'),
-            chimes: new Audio('https://www.dropbox.com/scl/fi/7tbmxbk2lkk5qnowp2jhq/18.-Office-Clock-Chimes.mp3?rlkey=kos8ugwzc7olplutc3ckz611x&st=3p0wk8yc&raw=1'),
-            jackInBox: new Audio('https://www.dropbox.com/scl/fi/bzdudsuylacaw9x3ickyt/Jackinthebox.ogg.mp3?rlkey=1x5pe8lu8ryy3tjjrj83sychy&st=1sqlsve6&raw=1')
-        };
-        sounds.scarySpace.loop = true;
-        sounds.fan.loop = true;
-        sounds.breathing.loop = true;
-        sounds.musicBoxRun.loop = true;
-        sounds.jackInBox.loop = true;
+    <div id="win-screen" class="screen" style="background: black;">
+        <h1 style="font-size: 80px;">6:00</h1>
+        <p id="win-text" style="padding: 20px;"></p>
+    </div>
+</div>
 
-        // --- СОСТОЯНИЕ ИГРЫ ---
-        let state = {
-            isStarted: false, isGameOver: false, isWon: false,
-            maskOn: false, tabletOn: false, maskLocked: false,
-            musicBox: 15.0, // 15 секунд максимум
-            boxDepleted: false, windUpCooldown: false,
-            hour: 0, uncleInOffice: false, uncleCooldown: false
-        };
+<script>
+const ASSETS = {
+    office: "https://www.dropbox.com/scl/fi/wrfdr2xng26o3vd62izae/Picsart_26-03-03_12-08-20-386.png?rlkey=7pmdyf6pty02uy2fo8zpa4cb0&dl=1",
+    officeEvil: "https://www.dropbox.com/scl/fi/nxwae69jjuhqrxzu75uu3/Picsart_26-03-03_12-10-06-740.png?rlkey=36gx4hw1p4o1v24i0mqdsmtyt&dl=1",
+    tabletEmpty: "https://www.dropbox.com/scl/fi/rl3t00hzts1442dy3ng1y/Picsart_26-03-03_12-20-11-804.png?rlkey=ozke0ewxynw430hb92wvc5eh6&dl=1",
+    rabbitJumpscare: "https://www.dropbox.com/scl/fi/zdwojmpsz3mf2ie4f1jwj/Picsart_26-02-25_19-10-33-922.png?rlkey=e4l9uktjlvtl7h4du0v7gmluc&dl=1",
+    uncleJumpscare: "https://www.dropbox.com/scl/fi/3eur27q9f2p7ute1png7r/Picsart_26-03-03_12-22-39-720.png?rlkey=rbeioyze6j2qxoaaspe80xis9&dl=1",
+    gameOverImg: "https://www.dropbox.com/scl/fi/iqkzu93vquq47csykxtui/Picsart_26-03-03_00-36-45-629.jpg?rlkey=tmqle9p1rxag6k3n44nk5yd44&dl=1"
+};
 
-        // DOM элементы
-        const el = {
-            office: document.getElementById('office'), maskOverlay: document.getElementById('mask-overlay'),
-            tabletOverlay: document.getElementById('tablet-overlay'), tabletUI: document.getElementById('tablet-ui'),
-            maskBtn: document.getElementById('mask-btn'), tabletBtn: document.getElementById('tablet-btn'),
-            musicCircle: document.getElementById('music-box-circle'), timeDisplay: document.getElementById('time-display'),
-            flash: document.getElementById('flash-overlay'), blackOut: document.getElementById('black-overlay')
-        };
+const SOUNDS = {
+    space: new Audio("https://www.dropbox.com/scl/fi/ydpjtx0tsg3cyoc53xkje/03.-Music-Track-Scary-Space.mp3?rlkey=i6akwkd0y0m03lsj5vynnmbgh&dl=1"),
+    fan: new Audio("https://www.dropbox.com/scl/fi/b535jgn11ynl89bbizl4k/11.-Office-Fan.mp3?rlkey=6gzeo2amxejpnoiq91w6s8l3o&dl=1"),
+    maskOn: new Audio("https://www.dropbox.com/scl/fi/a0hvnxefp4sucs9jdyd6b/16.-Office-Mask-2.mp3?rlkey=fgguybvsq74uu5yk6xfcg2z76&dl=1"),
+    maskOff: new Audio("https://www.dropbox.com/scl/fi/p0s2b4y7sw52os06jo90x/15.-Office-Mask-1.mp3?rlkey=ss84iu6cgcz9h63o8ghc2c587&dl=1"),
+    breathing: new Audio("https://www.dropbox.com/scl/fi/hp71jtko8sydk8rvb2ree/fnaf-2-mask-breathing.mp3?rlkey=gyum33p6jn4y2xqxiu9969z0b&dl=1"),
+    tablet: new Audio("https://www.dropbox.com/scl/fi/x46rgpezdkfrigh0kti86/fnaf-open-camera-sound.mp3?rlkey=stri1wynmnvjeyjvqd2dcbx23&dl=1"),
+    boxMusic: new Audio("https://www.dropbox.com/scl/fi/vpj6vx3ijjfdiwmqu3xet/music-box-fnaf-2.mp3?rlkey=wzgl889gsg9deuhwpuo4v8t3f&dl=1"),
+    windUp: new Audio("https://www.dropbox.com/scl/fi/cmbjaswveyomddstctln4/22.-Music-Box-Wind-Up.mp3?rlkey=v70yn6gcyvhzo0l9j3stu7tgc&dl=1"),
+    boxEnd: new Audio("https://www.dropbox.com/scl/fi/bzdudsuylacaw9x3ickyt/Jackinthebox.ogg.mp3?rlkey=1x5pe8lu8ryy3tjjrj83sychy&dl=1"),
+    screamRabbit: new Audio("https://www.dropbox.com/scl/fi/uvstl54jeet6lydkywgjs/jumpscare-sound-fnaf-4.mp3?rlkey=g3qnn9ciocm4kxb4vvztvmq24&dl=1"),
+    earRing: new Audio("https://www.dropbox.com/scl/fi/t3zw4b2gwjio4kmjr2e1q/dsaasdas.mp3?rlkey=ncu4p3treaq0khygc775zawro&dl=1"),
+    gameOverSound: new Audio("https://www.dropbox.com/scl/fi/wxzs6e486h45v96nteygk/2_5276355408896757892.ogg?rlkey=ngakjdr1nqqk2vpktxuyy8ggv&dl=1"),
+    uncleVoice1: new Audio("https://www.dropbox.com/scl/fi/x9os6vtrvpq4vtt3y1ysl/2_5276355408896757800.ogg?rlkey=j3rjny00gqmh9dxfz0inbpyuo&dl=1"),
+    uncleVoice2: new Audio("https://www.dropbox.com/scl/fi/w5jd926lkizm1vvshoah8/2_5276355408896757803.ogg?rlkey=kcqrufequ0g5yapfzhxtd1adl&dl=1"),
+    uncleFinalVoice: new Audio("https://www.dropbox.com/scl/fi/nc70fxr93w3jg4qeirs4s/2_5276355408896757796.ogg?rlkey=oz8qj2d7epb25r071qok7og0a&dl=1"),
+    officeStatic: new Audio("https://www.dropbox.com/scl/fi/mh57vtkgueqtedj1pvt7s/fnaf-2-office-scan_gameover-static-extended-made-with-Voicemod.mp3?rlkey=cw9ky5ojpa4jwek4kr6uppwiu&dl=1"),
+    clockChimes: new Audio("https://www.dropbox.com/scl/fi/7tbmxbk2lkk5qnowp2jhq/18.-Office-Clock-Chimes.mp3?rlkey=kos8ugwzc7olplutc3ckz611x&dl=1")
+};
 
-        // Имитация загрузки (3 сек)
+let gameState = {
+    isMaskOn: false,
+    isTabletUp: false,
+    boxValue: 100,
+    isBoxEmpty: false,
+    time: 0,
+    uncleActive: false,
+    uncleCooldown: false,
+    uncleAmbush: false,
+    gameOver: false,
+    windUpCooldown: false
+};
+
+window.onload = () => {
+    let progress = 0;
+    const interval = setInterval(() => {
+        progress += 5;
+        document.getElementById('load-text').innerText = `Загрузка Ресурсов. Это займёт считанные секунды. — ${progress}%`;
+        if (progress >= 100) {
+            clearInterval(interval);
+            setTimeout(() => {
+                document.getElementById('loading-screen').style.display = 'none';
+                document.getElementById('disclaimer-screen').style.display = 'flex';
+            }, 500);
+        }
+    }, 300);
+};
+
+document.getElementById('disclaimer-screen').onclick = () => {
+    document.getElementById('disclaimer-screen').style.display = 'none';
+    document.getElementById('office-screen').style.display = 'flex';
+    document.getElementById('office-screen').style.backgroundImage = `url(${ASSETS.office})`;
+    
+    SOUNDS.space.loop = true;
+    SOUNDS.space.play();
+    SOUNDS.fan.loop = true;
+    SOUNDS.fan.play();
+
+    startGameLogic();
+};
+
+function startGameLogic() {
+    let gameTimer = setInterval(() => {
+        if (gameState.gameOver) return clearInterval(gameTimer);
+        gameState.time++;
+        let hours = Math.floor(gameState.time / 60);
+        document.getElementById('time-display').innerText = `${hours}:00 Часов`;
+        if (hours >= 6) {
+            winGame();
+            clearInterval(gameTimer);
+        }
+    }, 1000); 
+
+    setInterval(() => {
+        if (gameState.gameOver) return;
+        if (gameState.boxValue > 0) {
+            gameState.boxValue -= 0.8; 
+            updateMusicCircle();
+        } else if (!gameState.isBoxEmpty) {
+            gameState.isBoxEmpty = true;
+            triggerBoxEnd();
+        }
+    }, 100);
+
+    setTimeout(() => {
+        setInterval(() => {
+            // ФИКС: Дядька на 5% чаще (0.4 + 0.05 = 0.45)
+            if (!gameState.gameOver && Math.random() < 0.45 && !gameState.uncleActive && !gameState.uncleCooldown && !gameState.uncleAmbush) {
+                spawnUncle();
+            }
+        }, 14000);
+    }, 20000);
+}
+
+document.getElementById('btn-mask').onclick = toggleMask;
+document.getElementById('btn-tablet').onclick = toggleTablet;
+document.getElementById('wind-up-btn').onclick = windUpBox;
+
+function toggleMask() {
+    if (gameState.gameOver || gameState.isTabletUp) return;
+    if (gameState.uncleActive && gameState.isMaskOn) return; 
+
+    gameState.isMaskOn = !gameState.isMaskOn;
+    const mask = document.getElementById('mask-img');
+    if (gameState.isMaskOn) {
+        mask.style.top = '0';
+        SOUNDS.maskOn.play();
+        SOUNDS.breathing.loop = true;
+        SOUNDS.breathing.play();
+        document.getElementById('btn-tablet').style.display = 'none';
+    } else {
+        mask.style.top = '-100%';
+        SOUNDS.maskOff.play();
+        SOUNDS.breathing.pause();
+        document.getElementById('btn-tablet').style.display = 'flex';
+    }
+}
+
+function toggleTablet() {
+    if (gameState.gameOver || gameState.isMaskOn) return;
+    
+    if (gameState.uncleAmbush && !gameState.isTabletUp) {
+        SOUNDS.tablet.currentTime = 0;
+        SOUNDS.tablet.play();
+        gameState.uncleAmbush = false;
+        
         setTimeout(() => {
-            document.getElementById('loading').style.display = 'none';
-            const disc = document.getElementById('disclaimer');
-            disc.style.display = 'flex';
-            setTimeout(() => disc.style.opacity = '1', 100);
-        }, 3000);
+            document.getElementById('tablet-img').style.bottom = '-100%';
+            jumpscare('uncle_ambush');
+        }, 50);
+        return;
+    }
 
-        // Старт игры
-        document.getElementById('disclaimer').addEventListener('click', () => {
-            if(state.isStarted) return;
-            state.isStarted = true;
-            document.getElementById('disclaimer').style.display = 'none';
-            document.getElementById('game-container').style.display = 'block';
-            sounds.scarySpace.play();
-            sounds.fan.play();
-            startGameLoops();
-        });
+    gameState.isTabletUp = !gameState.isTabletUp;
+    const tablet = document.getElementById('tablet-img');
+    const ui = document.getElementById('music-box-ui');
+    
+    SOUNDS.tablet.currentTime = 0;
+    SOUNDS.tablet.play();
 
-        // --- МЕХАНИКИ УПРАВЛЕНИЯ ---
-        function toggleMask() {
-            if(state.isGameOver || state.isWon || state.tabletOn || state.maskLocked) return;
-            state.maskOn = !state.maskOn;
+    if (gameState.isTabletUp) {
+        tablet.style.bottom = '0';
+        ui.style.display = 'flex';
+        SOUNDS.boxMusic.loop = true;
+        SOUNDS.boxMusic.play();
+        document.getElementById('btn-mask').style.display = 'none';
+    } else {
+        tablet.style.bottom = '-100%';
+        ui.style.display = 'none';
+        SOUNDS.boxMusic.pause();
+        document.getElementById('btn-mask').style.display = 'flex';
+    }
+}
+
+function windUpBox() {
+    if (gameState.windUpCooldown || gameState.isBoxEmpty || gameState.gameOver) return;
+    gameState.boxValue = Math.min(100, gameState.boxValue + 15);
+    SOUNDS.windUp.currentTime = 0;
+    SOUNDS.windUp.play();
+    gameState.windUpCooldown = true;
+    setTimeout(() => gameState.windUpCooldown = false, 500);
+}
+
+function updateMusicCircle() {
+    const circle = document.getElementById('music-circle');
+    circle.style.background = `conic-gradient(white ${gameState.boxValue}%, transparent 0)`;
+}
+
+function triggerBoxEnd() {
+    document.getElementById('music-box-ui').style.display = 'none';
+    document.getElementById('tablet-img').src = ASSETS.tabletEmpty;
+    SOUNDS.boxEnd.loop = true;
+    SOUNDS.boxEnd.play();
+    
+    setTimeout(() => {
+        if (!gameState.gameOver) jumpscare('rabbit');
+    }, 15000);
+}
+
+function spawnUncle() {
+    gameState.uncleActive = true;
+    const office = document.getElementById('office-screen');
+    office.style.transition = 'none'; 
+    office.style.backgroundImage = `url(${ASSETS.officeEvil})`;
+    
+    SOUNDS.officeStatic.currentTime = 0;
+    SOUNDS.officeStatic.loop = true;
+    SOUNDS.officeStatic.play();
+    
+    if (Math.random() < 0.8) SOUNDS.uncleVoice1.play();
+    else SOUNDS.uncleVoice2.play();
+
+    let blinkTime = 0;
+    let blink = setInterval(() => {
+        office.style.filter = (office.style.filter === 'brightness(0)') ? 'brightness(1)' : 'brightness(0)';
+        blinkTime += 100;
+        
+        if (blinkTime >= 7000) { 
+            clearInterval(blink);
+            office.style.filter = 'brightness(0)'; 
             
-            if(state.maskOn) {
-                sounds.maskOn.play();
-                el.maskOverlay.style.display = 'block';
-                setTimeout(() => el.maskOverlay.style.top = '0', 10);
-                sounds.breathing.play();
-                el.tabletBtn.style.display = 'none'; // Скрываем планшет когда в маске
-            } else {
-                sounds.maskOff.play();
-                el.maskOverlay.style.top = '-100%';
-                setTimeout(() => { if(!state.maskOn) el.maskOverlay.style.display = 'none'; }, 300);
-                sounds.breathing.pause();
-                sounds.breathing.currentTime = 0;
-                el.tabletBtn.style.display = 'flex';
-            }
-        }
+            let playerSaved = gameState.isMaskOn;
 
-        // Авто-снятие (для аниматроников)
-        function forceRemoveOverlays() {
-            if(state.maskOn) { state.maskLocked = false; toggleMask(); }
-            if(state.tabletOn) toggleTablet();
-            el.maskBtn.style.display = 'none';
-            el.tabletBtn.style.display = 'none';
-        }
-
-        function toggleTablet() {
-            if(state.isGameOver || state.isWon || state.maskOn) return;
-            // Если камера сломана (заяц), планшет можно только опустить, если он поднят
-            if(state.boxDepleted && !state.tabletOn) return; 
-
-            state.tabletOn = !state.tabletOn;
-            sounds.camSound.currentTime = 0;
-            sounds.camSound.play();
-
-            if(state.tabletOn) {
-                el.tabletOverlay.style.display = 'block';
-                setTimeout(() => el.tabletOverlay.style.top = '0', 10);
-                el.maskBtn.style.display = 'none';
-                if(!state.boxDepleted) {
-                    el.tabletUI.style.display = 'block';
-                    sounds.musicBoxRun.play();
-                }
-            } else {
-                el.tabletOverlay.style.top = '100%';
-                setTimeout(() => { if(!state.tabletOn) el.tabletOverlay.style.display = 'none'; }, 300);
-                el.maskBtn.style.display = 'flex';
-                el.tabletUI.style.display = 'none';
-                sounds.musicBoxRun.pause();
-            }
-        }
-
-        function windUpBox() {
-            if(state.windUpCooldown || state.boxDepleted) return;
-            state.windUpCooldown = true;
-            sounds.windUp.currentTime = 0;
-            sounds.windUp.play();
-            state.musicBox = Math.min(15.0, state.musicBox + 3.0);
-            setTimeout(() => state.windUpCooldown = false, 1000); // 1 сек перезарядка
-        }
-
-        // --- ИГРОВЫЕ ЦИКЛЫ ---
-        function startGameLoops() {
-            // Таймер Ночи (6 минут = 360 сек. Значит 1 час = 60 сек)
-            let nightTimer = setInterval(() => {
-                if(state.isGameOver || state.isWon) return clearInterval(nightTimer);
-                state.hour++;
-                el.timeDisplay.innerText = state.hour + ':00 Часов';
-                if(state.hour >= 6) winGame();
-            }, 60000);
-
-            // Шкатулка
-            let boxTimer = setInterval(() => {
-                if(state.isGameOver || state.isWon || state.boxDepleted) return clearInterval(boxTimer);
-                state.musicBox -= 0.1; // Обновляем каждые 100мс
-                let pct = (state.musicBox / 15.0) * 100;
-                el.musicCircle.style.background = `conic-gradient(white ${pct}%, transparent 0)`;
+            setTimeout(() => {
+                office.style.transition = 'filter 2s ease-in-out';
+                office.style.backgroundImage = `url(${ASSETS.office})`;
+                office.style.filter = 'brightness(1)';
                 
-                if(state.musicBox <= 0) triggerRabbitSequence();
-            }, 100);
+                SOUNDS.officeStatic.pause(); 
+                gameState.uncleActive = false;
+                
+                gameState.uncleCooldown = true;
+                setTimeout(() => gameState.uncleCooldown = false, 14000);
 
-            // Спавн Дядьки (проверка каждые 10 сек)
-            let uncleTimer = setInterval(() => {
-                if(state.isGameOver || state.isWon || state.hour < 1 || state.uncleInOffice || state.uncleCooldown) return;
-                if(Math.random() <= 0.20) spawnUncle(); // 20% шанс
-            }, 10000);
-        }
-
-        // --- ЗАЯЦ ---
-        function triggerRabbitSequence() {
-            state.boxDepleted = true;
-            el.tabletUI.style.display = 'none';
-            sounds.musicBoxRun.pause();
-            el.tabletOverlay.src = "https://www.dropbox.com/scl/fi/rl3t00hzts1442dy3ng1y/Picsart_26-03-03_12-20-11-804.png?rlkey=ozke0ewxynw430hb92wvc5eh6&st=xls5n8ko&raw=1"; // Мертвая камера
-            
-            sounds.jackInBox.play();
-            
-            // Ждем 15 сек до скримера, если не закрыли игру
-            setTimeout(() => {
-                if(state.isWon) return;
-                state.isGameOver = true;
-                forceRemoveOverlays();
-                executeJumpscare('jumpscare-rabbit');
-            }, 15000);
-        }
-
-        // --- ДОБРЫЙ ДЯДЬКА ---
-        function spawnUncle() {
-            state.uncleInOffice = true;
-            el.office.src = "https://www.dropbox.com/scl/fi/nxwae69jjuhqrxzu75uu3/Picsart_26-03-03_12-10-06-740.png?rlkey=36gx4hw1p4o1v24i0mqdsmtyt&st=wdesj628&raw=1"; // Офис с дядькой
-            el.office.classList.add('rapid-blink');
-            
-            Math.random() > 0.2 ? sounds.uncleSpawn2.play() : sounds.uncleSpawn1.play();
-            sounds.uncleStatic.play();
-
-            // Даем 2.5 сек на маску
-            let reactionCheck = setTimeout(() => {
-                if(state.isWon) return;
-                if(state.maskOn && !state.tabletOn) {
-                    // Успел!
-                    state.maskLocked = true; // Нельзя снять
-                    setTimeout(() => {
-                        // Дядька уходит
-                        el.blackOut.style.opacity = '1';
-                        setTimeout(() => {
-                            state.uncleInOffice = false;
-                            state.maskLocked = false;
-                            el.office.src = "https://www.dropbox.com/scl/fi/wrfdr2xng26o3vd62izae/Picsart_26-03-03_12-08-20-386.png?rlkey=7pmdyf6pty02uy2fo8zpa4cb0&st=61w2xyj8&raw=1";
-                            el.office.classList.remove('rapid-blink');
-                            sounds.uncleStatic.pause(); sounds.uncleStatic.currentTime = 0;
-                            el.blackOut.style.transition = "opacity 2s";
-                            el.blackOut.style.opacity = '0';
-                            
-                            // Кулдаун 14 сек
-                            state.uncleCooldown = true;
-                            setTimeout(() => { state.uncleCooldown = false; el.blackOut.style.transition = "opacity 3s"; }, 14000);
-                        }, 2000);
-                    }, 4000);
-                } else {
-                    // Не успел / без маски / в планшете
-                    state.isGameOver = true;
-                    forceRemoveOverlays();
-                    
-                    setTimeout(() => {
-                        sounds.uncleWord.play();
-                        const unc = document.getElementById('jumpscare-uncle');
-                        unc.style.display = 'block';
-                        setTimeout(() => unc.style.bottom = '0', 10);
-                        
-                        setTimeout(() => executeDeathEffects(), 2000);
-                    }, 5000);
+                if (!playerSaved) {
+                    gameState.uncleAmbush = true; 
                 }
-            }, 2500);
+            }, 2000); 
         }
+    }, 100);
+}
 
-        // --- КОНЕЦ ИГРЫ (ПРОИГРЫШ) ---
-        function executeJumpscare(imgId) {
-            sounds.jumpscare.play();
-            const scare = document.getElementById(imgId);
-            scare.style.display = 'block';
-            setTimeout(() => scare.style.bottom = '0', 10);
+function jumpscare(type) {
+    if (gameState.gameOver) return;
+    gameState.gameOver = true;
+    
+    Object.values(SOUNDS).forEach(s => { s.pause(); });
+    
+    document.getElementById('tablet-img').style.bottom = '-100%';
+    document.getElementById('mask-img').style.top = '-100%';
+    document.getElementById('music-box-ui').style.display = 'none';
+
+    const container = document.getElementById('jumpscare-container');
+    const img = document.getElementById('jumpscare-img');
+    
+    img.src = (type === 'rabbit') ? ASSETS.rabbitJumpscare : ASSETS.uncleJumpscare;
+    container.style.display = 'block';
+    img.className = 'shake';
+    img.style.bottom = '0';
+
+    if (type === 'rabbit') {
+        SOUNDS.screamRabbit.play();
+        triggerDeathEffects(2500); 
+    } else {
+        SOUNDS.uncleFinalVoice.play();
+        setTimeout(() => {
+            img.style.transform = 'translateX(-50%) scale(2.5)';
+            triggerDeathEffects(100); 
+        }, 1200);
+    }
+}
+
+function triggerDeathEffects(delay) {
+    setTimeout(() => {
+        document.getElementById('flash-overlay').style.background = 'white';
+        document.getElementById('flash-overlay').style.display = 'block';
+        SOUNDS.earRing.play();
+        setTimeout(() => {
+            // ФИКС ЭКРАНА СМЕРТИ
+            document.getElementById('flash-overlay').style.display = 'none';
+            document.getElementById('office-screen').style.display = 'none';
+            document.getElementById('jumpscare-container').style.display = 'none';
             
-            setTimeout(() => executeDeathEffects(), 2000);
-        }
-
-        function executeDeathEffects() {
-            stopAllAudio();
-            document.getElementById('game-container').innerHTML = ''; // Удаляем весь интерфейс (часы, кнопки и тд)
+            document.getElementById('game-over-screen').style.display = 'flex';
+            document.getElementById('game-over-img').src = ASSETS.gameOverImg;
+            SOUNDS.gameOverSound.play();
             
-            el.flash.style.opacity = '1';
-            sounds.ringing.play();
-            
-            setTimeout(() => {
-                el.blackOut.style.opacity = '1';
-                setTimeout(() => {
-                    document.getElementById('game-over-screen').style.display = 'block';
-                    sounds.gameOver.play();
-                    setTimeout(() => location.reload(), 6000);
-                }, 3000);
-            }, 7000);
-        }
+            // Перезагрузка через 7 секунд после появления картинки
+            setTimeout(() => location.reload(), 7000);
+        }, 6000);
+    }, delay);
+}
 
-        // --- ПОБЕДА (6 УТРА) ---
-        function winGame() {
-            state.isWon = true;
-            stopAllAudio();
-            document.getElementById('game-container').style.display = 'none';
-            document.getElementById('win-screen').style.display = 'flex';
-            
-            sounds.chimes.play();
-            setTimeout(() => document.getElementById('win-screen').style.opacity = '1', 100);
-
-            setTimeout(() => {
-                document.getElementById('win-text').style.display = 'block';
-                sounds.scarySpace.play();
-                setTimeout(() => location.reload(), 13000);
-            }, 16000);
-        }
-
-        function stopAllAudio() {
-            for(let key in sounds) {
-                sounds[key].pause();
-                sounds[key].currentTime = 0;
-            }
-        }
-    </script>
+function winGame() {
+    gameState.gameOver = true;
+    
+    // ФИКС: Полная тишина перед курантами
+    Object.values(SOUNDS).forEach(s => { s.pause(); s.currentTime = 0; });
+    
+    document.getElementById('office-screen').style.display = 'none';
+    const winScreen = document.getElementById('win-screen');
+    winScreen.style.display = 'flex';
+    
+    SOUNDS.clockChimes.currentTime = 0;
+    SOUNDS.clockChimes.play();
+    
+    // ФИКС: Куранты работают 16 секунд до появления текста
+    setTimeout(() => {
+        document.getElementById('win-text').innerText = "Спасибо За Игру! Игра пока-что в ДЕМО версии, возможно в скором времени выпустим обновление.";
+        SOUNDS.space.play();
+        // Перезагрузка после текста
+        setTimeout(() => location.reload(), 13000);
+    }, 16000);
+}
+</script>
 </body>
 </html>
 
