@@ -178,7 +178,8 @@ let gameState = {
     uncleCooldown: false,
     uncleAmbush: false,
     gameOver: false,
-    windUpCooldown: false
+    windUpCooldown: false,
+    uncleReactionTimer: null
 };
 
 window.onload = () => {
@@ -232,14 +233,11 @@ function startGameLogic() {
         }
     }, 100);
 
-    setTimeout(() => {
-        setInterval(() => {
-            // ФИКС: Дядька на 5% чаще (0.4 + 0.05 = 0.45)
-            if (!gameState.gameOver && Math.random() < 0.45 && !gameState.uncleActive && !gameState.uncleCooldown && !gameState.uncleAmbush) {
-                spawnUncle();
-            }
-        }, 14000);
-    }, 20000);
+    setInterval(() => {
+        if (!gameState.gameOver && Math.random() < 0.45 && !gameState.uncleActive && !gameState.uncleCooldown && !gameState.uncleAmbush) {
+            spawnUncle();
+        }
+    }, 14000);
 }
 
 document.getElementById('btn-mask').onclick = toggleMask;
@@ -248,18 +246,24 @@ document.getElementById('wind-up-btn').onclick = windUpBox;
 
 function toggleMask() {
     if (gameState.gameOver || gameState.isTabletUp) return;
-    if (gameState.uncleActive && gameState.isMaskOn) return; 
-
+    
     gameState.isMaskOn = !gameState.isMaskOn;
     const mask = document.getElementById('mask-img');
     if (gameState.isMaskOn) {
         mask.style.top = '0';
+        SOUNDS.maskOn.currentTime = 0;
         SOUNDS.maskOn.play();
         SOUNDS.breathing.loop = true;
         SOUNDS.breathing.play();
         document.getElementById('btn-tablet').style.display = 'none';
+        
+        if (gameState.uncleActive) {
+             clearTimeout(gameState.uncleReactionTimer);
+             gameState.uncleReactionTimer = null;
+        }
     } else {
         mask.style.top = '-100%';
+        SOUNDS.maskOff.currentTime = 0;
         SOUNDS.maskOff.play();
         SOUNDS.breathing.pause();
         document.getElementById('btn-tablet').style.display = 'flex';
@@ -270,14 +274,13 @@ function toggleTablet() {
     if (gameState.gameOver || gameState.isMaskOn) return;
     
     if (gameState.uncleAmbush && !gameState.isTabletUp) {
-        SOUNDS.tablet.currentTime = 0;
+        gameState.isTabletUp = true;
+        document.getElementById('tablet-img').style.bottom = '0';
         SOUNDS.tablet.play();
-        gameState.uncleAmbush = false;
-        
         setTimeout(() => {
             document.getElementById('tablet-img').style.bottom = '-100%';
-            jumpscare('uncle_ambush');
-        }, 50);
+            jumpscare('uncle');
+        }, 300);
         return;
     }
 
@@ -337,20 +340,40 @@ function spawnUncle() {
     SOUNDS.officeStatic.loop = true;
     SOUNDS.officeStatic.play();
     
-    if (Math.random() < 0.8) SOUNDS.uncleVoice1.play();
-    else SOUNDS.uncleVoice2.play();
+    // Гарантированная озвучка
+    if (Math.random() < 0.8) {
+        SOUNDS.uncleVoice2.currentTime = 0;
+        SOUNDS.uncleVoice2.play();
+    } else {
+        SOUNDS.uncleVoice1.currentTime = 0;
+        SOUNDS.uncleVoice1.play();
+    }
+
+    let tabletCheck = setTimeout(() => {
+        if (gameState.isTabletUp) {
+            gameState.isTabletUp = false;
+            document.getElementById('tablet-img').style.bottom = '-100%';
+            document.getElementById('music-box-ui').style.display = 'none';
+            jumpscare('uncle');
+        }
+    }, 8000);
+
+    gameState.uncleReactionTimer = setTimeout(() => {
+        if (!gameState.isMaskOn) {
+            gameState.uncleAmbush = true;
+        }
+    }, 2500);
 
     let blinkTime = 0;
     let blink = setInterval(() => {
         office.style.filter = (office.style.filter === 'brightness(0)') ? 'brightness(1)' : 'brightness(0)';
         blinkTime += 100;
         
-        if (blinkTime >= 7000) { 
+        if (blinkTime >= 8000) { 
             clearInterval(blink);
+            clearTimeout(tabletCheck);
             office.style.filter = 'brightness(0)'; 
             
-            let playerSaved = gameState.isMaskOn;
-
             setTimeout(() => {
                 office.style.transition = 'filter 2s ease-in-out';
                 office.style.backgroundImage = `url(${ASSETS.office})`;
@@ -360,10 +383,10 @@ function spawnUncle() {
                 gameState.uncleActive = false;
                 
                 gameState.uncleCooldown = true;
-                setTimeout(() => gameState.uncleCooldown = false, 14000);
+                setTimeout(() => gameState.uncleCooldown = false, 10000);
 
-                if (!playerSaved) {
-                    gameState.uncleAmbush = true; 
+                if (gameState.uncleAmbush && !gameState.gameOver) {
+                    jumpscare('uncle');
                 }
             }, 2000); 
         }
@@ -389,6 +412,7 @@ function jumpscare(type) {
     img.style.bottom = '0';
 
     if (type === 'rabbit') {
+        SOUNDS.screamRabbit.currentTime = 0;
         SOUNDS.screamRabbit.play();
         triggerDeathEffects(2500); 
     } else {
@@ -406,7 +430,6 @@ function triggerDeathEffects(delay) {
         document.getElementById('flash-overlay').style.display = 'block';
         SOUNDS.earRing.play();
         setTimeout(() => {
-            // ФИКС ЭКРАНА СМЕРТИ
             document.getElementById('flash-overlay').style.display = 'none';
             document.getElementById('office-screen').style.display = 'none';
             document.getElementById('jumpscare-container').style.display = 'none';
@@ -415,7 +438,6 @@ function triggerDeathEffects(delay) {
             document.getElementById('game-over-img').src = ASSETS.gameOverImg;
             SOUNDS.gameOverSound.play();
             
-            // Перезагрузка через 7 секунд после появления картинки
             setTimeout(() => location.reload(), 7000);
         }, 6000);
     }, delay);
@@ -423,24 +445,23 @@ function triggerDeathEffects(delay) {
 
 function winGame() {
     gameState.gameOver = true;
-    
-    // ФИКС: Полная тишина перед курантами
+    // Останавливаем всё, кроме колоколов
     Object.values(SOUNDS).forEach(s => { s.pause(); s.currentTime = 0; });
     
     document.getElementById('office-screen').style.display = 'none';
     const winScreen = document.getElementById('win-screen');
     winScreen.style.display = 'flex';
     
+    // Играем колокола 16 секунд
     SOUNDS.clockChimes.currentTime = 0;
     SOUNDS.clockChimes.play();
     
-    // ФИКС: Куранты работают 16 секунд до появления текста
     setTimeout(() => {
         document.getElementById('win-text').innerText = "Спасибо За Игру! Игра пока-что в ДЕМО версии, возможно в скором времени выпустим обновление.";
+        // Включаем космос ТОЛЬКО после колоколов
         SOUNDS.space.play();
-        // Перезагрузка после текста
         setTimeout(() => location.reload(), 13000);
-    }, 16000);
+    }, 16000); 
 }
 </script>
 </body>
