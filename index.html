@@ -188,7 +188,7 @@
 const ASSETS = {
     office: "https://www.dropbox.com/scl/fi/wrfdr2xng26o3vd62izae/Picsart_26-03-03_12-08-20-386.png?rlkey=7pmdyf6pty02uy2fo8zpa4cb0&dl=1",
     officeEvil: "https://www.dropbox.com/scl/fi/nxwae69jjuhqrxzu75uu3/Picsart_26-03-03_12-10-06-740.png?rlkey=36gx4hw1p4o1v24i0mqdsmtyt&dl=1",
-    tabletEmpty: "https://www.dropbox.com/scl/fi/rl3t00hzts1442dy3ng1y/Picsart_26-03-03_12-20-11-804.png?rlkey=ozke0ewxynw430hb92wvc5eh6&dl=1",
+    tabletEmpty: "https://www.dropbox.com/scl/fi/rl3t00hzts1442dy3ng1y/Picsart_26-03-03_12-20-11-804.png?rlkey=ozke0ewxynw430hb92wvc5eh6&st=kkeq48e6&dl=1",
     rabbitJumpscare: "https://www.dropbox.com/scl/fi/zdwojmpsz3mf2ie4f1jwj/Picsart_26-02-25_19-10-33-922.png?rlkey=e4l9uktjlvtl7h4du0v7gmluc&dl=1",
     uncleJumpscare: "https://www.dropbox.com/scl/fi/3eur27q9f2p7ute1png7r/Picsart_26-03-03_12-22-39-720.png?rlkey=rbeioyze6j2qxoaaspe80xis9&dl=1",
     gameOverImg: "https://www.dropbox.com/scl/fi/iqkzu93vquq47csykxtui/Picsart_26-03-03_00-36-45-629.jpg?rlkey=tmqle9p1rxag6k3n44nk5yd44&dl=1"
@@ -471,13 +471,30 @@ function spawnUncle() {
 
 function triggerBoxEnd() {
     if(gameState.godMode) return;
+    
+    // Планшет меняется НАВСЕГДА и кнопка ИСЧЕЗАЕТ
+    document.getElementById('tablet-img').src = ASSETS.tabletEmpty;
+    document.getElementById('wind-up-btn').style.display = 'none';
+    
     SOUNDS.boxEnd.loop = true; SOUNDS.boxEnd.play();
-    setTimeout(() => { if (!gameState.gameOver && !gameState.godMode) jumpscare('rabbit'); }, 15000);
+    
+    let waitTime = gameState.night === 1 ? 15000 : 11000;
+    setTimeout(() => { 
+        if (!gameState.gameOver && !gameState.godMode) jumpscare('rabbit'); 
+    }, waitTime);
 }
 
 function jumpscare(type) {
     if (gameState.gameOver || gameState.godMode) return;
     gameState.gameOver = true;
+
+    // ПРИНУДИТЕЛЬНО ОПУСКАЕМ МАСКУ И ПЛАНШЕТ
+    document.getElementById('mask-img').style.top = '-100%';
+    document.getElementById('tablet-img').style.bottom = '-100%';
+    document.getElementById('music-box-ui').style.display = 'none';
+    SOUNDS.breathing.pause();
+    SOUNDS.boxMusic.pause();
+
     Object.values(SOUNDS).forEach(s => { s.pause(); s.currentTime = 0; });
     const img = document.getElementById('jumpscare-img');
     img.src = type === 'rabbit' ? ASSETS.rabbitJumpscare : ASSETS.uncleJumpscare;
@@ -493,7 +510,6 @@ function jumpscare(type) {
     }, 2000);
 }
 
-// ФИКС ЗАГРУЗКИ ПОСЛЕ ПОБЕДЫ
 function winGame() {
     gameState.gameOver = true;
     Object.values(SOUNDS).forEach(s => { s.pause(); s.currentTime = 0; });
@@ -513,7 +529,6 @@ function winGame() {
         SOUNDS.clock.play();
         setTimeout(() => { winText.style.opacity = "1"; }, 100);
 
-        // Через 9 секунд перезагрузка страницы
         setTimeout(() => {
             let nextNight = gameState.night + 1;
             localStorage.setItem('uncleNight', nextNight);
@@ -542,3 +557,4 @@ function playNight2Intro() {
 </script>
 </body>
 </html>
+
