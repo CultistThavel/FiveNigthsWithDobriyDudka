@@ -27,7 +27,7 @@
 
         #main-menu { 
             z-index: 80; 
-            background: url('https://www.dropbox.com/scl/fi/bdedoiziipheugvoc5h1s/Picsart_26-03-04_15-33-09-570.jpg?rlkey=7z0xxtzylneomakw1ax273hid&st=csiskrjp&dl=1') no-repeat center center;
+            background: url('https://www.dropbox.com/scl/fi/59s1vi0gnp4vkunzzimr1/Picsart_26-03-06_15-47-30-170.jpg?rlkey=2h18wmdi0djeot1584ls815bl&st=m4zyq6wa&raw=1') no-repeat center center;
             background-size: contain; 
         }
         .menu-btn-container { position: absolute; left: 5%; bottom: 15%; display: flex; flex-direction: column; align-items: flex-start; }
@@ -153,8 +153,8 @@
     <div id="office-screen" class="screen">
         <div id="time-display">0:00 Часов</div>
         <div id="night-display">1 Ночь</div>
-        <img id="mask-img" src="https://www.dropbox.com/scl/fi/rybmw97y2ceswqck6y622/Picsart_26-03-03_12-10-54-417.png?rlkey=xdy6bz2ywvjneb3hjhu57h7mq&dl=1">
-        <img id="tablet-img" src="https://www.dropbox.com/scl/fi/d4utblxhiwi4n7le7c2zi/Picsart_26-03-03_12-19-01-880.png?rlkey=p8pe810y62czpu06srttz6zis&dl=1">
+        <img id="mask-img" src="https://www.dropbox.com/scl/fi/rybmw97y2ceswqck6y622/Picsart_26-03-03_12-10-54-417.png?rlkey=xdy6bz2ywvjneb3hjhu57h7mq&raw=1">
+        <img id="tablet-img" src="https://www.dropbox.com/scl/fi/d4utblxhiwi4n7le7c2zi/Picsart_26-03-03_12-19-01-880.png?rlkey=p8pe810y62czpu06srttz6zis&raw=1">
         <div id="music-box-ui">
             <div id="music-circle"></div>
             <button id="wind-up-btn">Ускорить Музыку</button>
@@ -172,7 +172,7 @@
     </div>
 
     <div id="dev-popup">
-        <p>3 Ночь в разработке, спасибо за игру! Ожидайте обновлений, постараемся как можно скорее выпустить 0.16 версию.</p>
+        <p id="dev-popup-text">4 ночь в разработке, спасибо за игру! Ожидайте постов в тг канале штв, постараемся как можно скорее выпустить обновление 0.20V.</p>
         <button onclick="closeDevPopup()" style="background: red; color: white; padding: 10px 30px; border: 2px solid black; font-weight: bold;">Ясно.</button>
     </div>
 
@@ -186,39 +186,48 @@
 
 <script>
 const ASSETS = {
-    office: "https://www.dropbox.com/scl/fi/wrfdr2xng26o3vd62izae/Picsart_26-03-03_12-08-20-386.png?rlkey=7pmdyf6pty02uy2fo8zpa4cb0&dl=1",
-    officeEvil: "https://www.dropbox.com/scl/fi/nxwae69jjuhqrxzu75uu3/Picsart_26-03-03_12-10-06-740.png?rlkey=36gx4hw1p4o1v24i0mqdsmtyt&dl=1",
-    tabletEmpty: "https://www.dropbox.com/scl/fi/rl3t00hzts1442dy3ng1y/Picsart_26-03-03_12-20-11-804.png?rlkey=ozke0ewxynw430hb92wvc5eh6&st=kkeq48e6&dl=1",
-    rabbitJumpscare: "https://www.dropbox.com/scl/fi/zdwojmpsz3mf2ie4f1jwj/Picsart_26-02-25_19-10-33-922.png?rlkey=e4l9uktjlvtl7h4du0v7gmluc&dl=1",
-    uncleJumpscare: "https://www.dropbox.com/scl/fi/3eur27q9f2p7ute1png7r/Picsart_26-03-03_12-22-39-720.png?rlkey=rbeioyze6j2qxoaaspe80xis9&dl=1",
-    gameOverImg: "https://www.dropbox.com/scl/fi/iqkzu93vquq47csykxtui/Picsart_26-03-03_00-36-45-629.jpg?rlkey=tmqle9p1rxag6k3n44nk5yd44&dl=1"
+    office: "https://www.dropbox.com/scl/fi/wrfdr2xng26o3vd62izae/Picsart_26-03-03_12-08-20-386.png?rlkey=7pmdyf6pty02uy2fo8zpa4cb0&raw=1",
+    officeEvil: "https://www.dropbox.com/scl/fi/nxwae69jjuhqrxzu75uu3/Picsart_26-03-03_12-10-06-740.png?rlkey=36gx4hw1p4o1v24i0mqdsmtyt&raw=1",
+    zomBoyOffice: "https://www.dropbox.com/scl/fi/skkhtitpemldn8leobby3/Picsart_26-03-06_15-32-40-211.jpg?rlkey=lanlneckosohzkxmqjkxcmc32&st=2krhbvqc&raw=1",
+    zomBoyAndUncle: "https://www.dropbox.com/scl/fi/p15wh4jg444ibn9oz6x6v/Picsart_26-03-06_16-21-55-612.jpg?rlkey=0l2owjaawus3btx548r1umlo5&st=mmk183ft&raw=1",
+    tabletEmpty: "https://www.dropbox.com/scl/fi/rl3t00hzts1442dy3ng1y/Picsart_26-03-03_12-20-11-804.png?rlkey=ozke0ewxynw430hb92wvc5eh6&st=kkeq48e6&raw=1",
+    rabbitJumpscare: "https://www.dropbox.com/scl/fi/zdwojmpsz3mf2ie4f1jwj/Picsart_26-02-25_19-10-33-922.png?rlkey=e4l9uktjlvtl7h4du0v7gmluc&raw=1",
+    uncleJumpscare: "https://www.dropbox.com/scl/fi/3eur27q9f2p7ute1png7r/Picsart_26-03-03_12-22-39-720.png?rlkey=rbeioyze6j2qxoaaspe80xis9&raw=1",
+    gameOverImg: "https://www.dropbox.com/scl/fi/iqkzu93vquq47csykxtui/Picsart_26-03-03_00-36-45-629.jpg?rlkey=tmqle9p1rxag6k3n44nk5yd44&raw=1"
 };
 
 const SOUNDS = {
-    menuMusic: new Audio("https://www.dropbox.com/scl/fi/0mor81ssu6479twq1eoe7/1-02.-FNaF-1-Main-Menu.mp3?rlkey=wtn1lnlq67loejqi9rjq4cd7a&dl=1"),
-    click: new Audio("https://www.dropbox.com/scl/fi/uj9r8sercw7i9jclfsnw1/Blip3.mp3?rlkey=j3696ja6et3o97anj3nulgvmp&dl=1"),
-    startSound: new Audio("https://www.dropbox.com/scl/fi/a3ljy9jnn59z240gpnhc8/fnaf-3-start-sound.mp3?rlkey=ytc3q4zcezvakgh6b3j3mhww0&dl=1"),
-    space: new Audio("https://www.dropbox.com/scl/fi/ydpjtx0tsg3cyoc53xkje/03.-Music-Track-Scary-Space.mp3?rlkey=i6akwkd0y0m03lsj5vynnmbgh&dl=1"),
-    fan: new Audio("https://www.dropbox.com/scl/fi/b535jgn11ynl89bbizl4k/11.-Office-Fan.mp3?rlkey=6gzeo2amxejpnoiq91w6s8l3o&dl=1"),
-    maskOn: new Audio("https://www.dropbox.com/scl/fi/a0hvnxefp4sucs9jdyd6b/16.-Office-Mask-2.mp3?rlkey=fgguybvsq74uu5yk6xfcg2z76&dl=1"),
-    maskOff: new Audio("https://www.dropbox.com/scl/fi/p0s2b4y7sw52os06jo90x/15.-Office-Mask-1.mp3?rlkey=ss84iu6cgcz9h63o8ghc2c587&dl=1"),
-    breathing: new Audio("https://www.dropbox.com/scl/fi/hp71jtko8sydk8rvb2ree/fnaf-2-mask-breathing.mp3?rlkey=gyum33p6jn4y2xqxiu9969z0b&dl=1"),
-    tablet: new Audio("https://www.dropbox.com/scl/fi/x46rgpezdkfrigh0kti86/fnaf-open-camera-sound.mp3?rlkey=stri1wynmnvjeyjvqd2dcbx23&dl=1"),
-    boxMusic: new Audio("https://www.dropbox.com/scl/fi/vpj6vx3ijjfdiwmqu3xet/music-box-fnaf-2.mp3?rlkey=wzgl889gsg9deuhwpuo4v8t3f&dl=1"),
-    windUp: new Audio("https://www.dropbox.com/scl/fi/cmbjaswveyomddstctln4/22.-Music-Box-Wind-Up.mp3?rlkey=v70yn6gcyvhzo0l9j3stu7tgc&dl=1"),
-    boxEnd: new Audio("https://www.dropbox.com/scl/fi/bzdudsuylacaw9x3ickyt/Jackinthebox.ogg.mp3?rlkey=1x5pe8lu8ryy3tjjrj83sychy&dl=1"),
-    screamRabbit: new Audio("https://www.dropbox.com/scl/fi/uvstl54jeet6lydkywgjs/jumpscare-sound-fnaf-4.mp3?rlkey=g3qnn9ciocm4kxb4vvztvmq24&dl=1"),
-    earRing: new Audio("https://www.dropbox.com/scl/fi/t3zw4b2gwjio4kmjr2e1q/dsaasdas.mp3?rlkey=ncu4p3treaq0khygc775zawro&dl=1"),
-    gameOverSound: new Audio("https://www.dropbox.com/scl/fi/wxzs6e486h45v96nteygk/2_5276355408896757892.ogg?rlkey=ngakjdr1nqqk2vpktxuyy8ggv&dl=1"),
-    static: new Audio("https://www.dropbox.com/scl/fi/mh57vtkgueqtedj1pvt7s/fnaf-2-office-scan_gameover-static-extended-made-with-Voicemod.mp3?rlkey=cw9ky5ojpa4jwek4kr6uppwiu&dl=1"),
-    clock: new Audio("https://www.dropbox.com/scl/fi/7tbmxbk2lkk5qnowp2jhq/18.-Office-Clock-Chimes.mp3?rlkey=kos8ugwzc7olplutc3ckz611x&dl=1"),
-    uncleVoice1: new Audio("https://www.dropbox.com/scl/fi/x9os6vtrvpq4vtt3y1ysl/2_5276355408896757800.ogg?rlkey=j3rjny00gqmh9dxfz0inbpyuo&dl=1"),
-    uncleVoice2: new Audio("https://www.dropbox.com/scl/fi/w5jd926lkizm1vvshoah8/2_5276355408896757803.ogg?rlkey=kcqrufequ0g5yapfzhxtd1adl&dl=1"),
-    uncleFinal: new Audio("https://www.dropbox.com/scl/fi/nc70fxr93w3jg4qeirs4s/2_5276355408896757796.ogg?rlkey=oz8qj2d7epb25r071qok7og0a&dl=1"),
-    phoneRing: new Audio("https://www.dropbox.com/scl/fi/efmhnm069f0bns2hky147/56e798f7f9caceb.mp3?rlkey=ennbycld4kkzoi6lacjvkr779&dl=1"),
-    phoneBeep: new Audio("https://www.dropbox.com/scl/fi/u8ef3os60u5tv809ek04s/2_5278653053191362809.ogg?rlkey=32c2xcbc8fep8v82vk553p4on&dl=1"),
+    menuMusic: new Audio("https://www.dropbox.com/scl/fi/0mor81ssu6479twq1eoe7/1-02.-FNaF-1-Main-Menu.mp3?rlkey=wtn1lnlq67loejqi9rjq4cd7a&raw=1"),
+    click: new Audio("https://www.dropbox.com/scl/fi/uj9r8sercw7i9jclfsnw1/Blip3.mp3?rlkey=j3696ja6et3o97anj3nulgvmp&raw=1"),
+    startSound: new Audio("https://www.dropbox.com/scl/fi/a3ljy9jnn59z240gpnhc8/fnaf-3-start-sound.mp3?rlkey=ytc3q4zcezvakgh6b3j3mhww0&raw=1"),
+    space: new Audio("https://www.dropbox.com/scl/fi/ydpjtx0tsg3cyoc53xkje/03.-Music-Track-Scary-Space.mp3?rlkey=i6akwkd0y0m03lsj5vynnmbgh&raw=1"),
+    fan: new Audio("https://www.dropbox.com/scl/fi/b535jgn11ynl89bbizl4k/11.-Office-Fan.mp3?rlkey=6gzeo2amxejpnoiq91w6s8l3o&raw=1"),
+    maskOn: new Audio("https://www.dropbox.com/scl/fi/a0hvnxefp4sucs9jdyd6b/16.-Office-Mask-2.mp3?rlkey=fgguybvsq74uu5yk6xfcg2z76&raw=1"),
+    maskOff: new Audio("https://www.dropbox.com/scl/fi/p0s2b4y7sw52os06jo90x/15.-Office-Mask-1.mp3?rlkey=ss84iu6cgcz9h63o8ghc2c587&raw=1"),
+    breathing: new Audio("https://www.dropbox.com/scl/fi/hp71jtko8sydk8rvb2ree/fnaf-2-mask-breathing.mp3?rlkey=gyum33p6jn4y2xqxiu9969z0b&raw=1"),
+    tablet: new Audio("https://www.dropbox.com/scl/fi/x46rgpezdkfrigh0kti86/fnaf-open-camera-sound.mp3?rlkey=stri1wynmnvjeyjvqd2dcbx23&raw=1"),
+    boxMusic: new Audio("https://www.dropbox.com/scl/fi/vpj6vx3ijjfdiwmqu3xet/music-box-fnaf-2.mp3?rlkey=wzgl889gsg9deuhwpuo4v8t3f&raw=1"),
+    windUp: new Audio("https://www.dropbox.com/scl/fi/cmbjaswveyomddstctln4/22.-Music-Box-Wind-Up.mp3?rlkey=v70yn6gcyvhzo0l9j3stu7tgc&raw=1"),
+    boxEnd: new Audio("https://www.dropbox.com/scl/fi/bzdudsuylacaw9x3ickyt/Jackinthebox.ogg.mp3?rlkey=1x5pe8lu8ryy3tjjrj83sychy&raw=1"),
+    screamRabbit: new Audio("https://www.dropbox.com/scl/fi/uvstl54jeet6lydkywgjs/jumpscare-sound-fnaf-4.mp3?rlkey=g3qnn9ciocm4kxb4vvztvmq24&raw=1"),
+    earRing: new Audio("https://www.dropbox.com/scl/fi/t3zw4b2gwjio4kmjr2e1q/dsaasdas.mp3?rlkey=ncu4p3treaq0khygc775zawro&raw=1"),
+    gameOverSound: new Audio("https://www.dropbox.com/scl/fi/wxzs6e486h45v96nteygk/2_5276355408896757892.ogg?rlkey=ngakjdr1nqqk2vpktxuyy8ggv&raw=1"),
+    static: new Audio("https://www.dropbox.com/scl/fi/mh57vtkgueqtedj1pvt7s/fnaf-2-office-scan_gameover-static-extended-made-with-Voicemod.mp3?rlkey=cw9ky5ojpa4jwek4kr6uppwiu&raw=1"),
+    clock: new Audio("https://www.dropbox.com/scl/fi/7tbmxbk2lkk5qnowp2jhq/18.-Office-Clock-Chimes.mp3?rlkey=kos8ugwzc7olplutc3ckz611x&raw=1"),
+    uncleVoice1: new Audio("https://www.dropbox.com/scl/fi/x9os6vtrvpq4vtt3y1ysl/2_5276355408896757800.ogg?rlkey=j3rjny00gqmh9dxfz0inbpyuo&raw=1"),
+    uncleVoice2: new Audio("https://www.dropbox.com/scl/fi/w5jd926lkizm1vvshoah8/2_5276355408896757803.ogg?rlkey=kcqrufequ0g5yapfzhxtd1adl&raw=1"),
+    uncleFinal: new Audio("https://www.dropbox.com/scl/fi/nc70fxr93w3jg4qeirs4s/2_5276355408896757796.ogg?rlkey=oz8qj2d7epb25r071qok7og0a&raw=1"),
+    phoneRing: new Audio("https://www.dropbox.com/scl/fi/efmhnm069f0bns2hky147/56e798f7f9caceb.mp3?rlkey=ennbycld4kkzoi6lacjvkr779&raw=1"),
+    phoneBeep: new Audio("https://www.dropbox.com/scl/fi/u8ef3os60u5tv809ek04s/2_5278653053191362809.ogg?rlkey=32c2xcbc8fep8v82vk553p4on&raw=1"),
     hotline: new Audio("https://www.dropbox.com/scl/fi/urkv0xo9a0p7hl7rvj24t/ba185c41344ce8af5bd6e75e180ea09f.mp3?rlkey=fou1m1idl7nt04asrshymrx22&st=9ewh6u8p&raw=1"),
-    phoneEnd: new Audio("https://www.dropbox.com/scl/fi/b9ea9x3zuxvhq2ox6d7vf/fnaf-1-phone-pick-up-made-with-Voicemod.mp3?rlkey=ffpjdf0fetlzep2407hjth1bq&dl=1")
+    phoneEnd: new Audio("https://www.dropbox.com/scl/fi/b9ea9x3zuxvhq2ox6d7vf/fnaf-1-phone-pick-up-made-with-Voicemod.mp3?rlkey=ffpjdf0fetlzep2407hjth1bq&raw=1"),
+    phoneRing3: new Audio("https://www.dropbox.com/scl/fi/3fef1f6lv82nr2bigqqne/fnaf-1-phone-call-sound.mp3?rlkey=w7nwsrhy0v7owiwa1supxzopc&st=uodr2qit&raw=1"),
+    phonePickUp: new Audio("https://www.dropbox.com/scl/fi/b9ea9x3zuxvhq2ox6d7vf/fnaf-1-phone-pick-up-made-with-Voicemod.mp3?rlkey=ffpjdf0fetlzep2407hjth1bq&st=yi1wvv6s&raw=1"),
+    phoneVoice3: new Audio("https://www.dropbox.com/scl/fi/2f08rc53n58s944fwuvw1/1cf1f977cc746dc79e4059fc1aa5a425.mp3?rlkey=v4da3dys2806az3owvsg7gogl&st=1ali09ok&raw=1"),
+    zomHello: new Audio("https://www.dropbox.com/scl/fi/bjjgezcjojhgd3erbfe50/FNAF-Balloon-Boy-Hello-QuickSounds.com.mp3?rlkey=3h8gimsg0ghoex92vj4ddjke3&st=86g786vl&raw=1"),
+    zomBye: new Audio("https://www.dropbox.com/scl/fi/752t7l4l56q9i0tq421jf/balloon-boy-bye-bye-made-with-Voicemod.mp3?rlkey=9vvoo02dqedelv4beor4405lf&st=awidgw43&raw=1"),
+    zomLaugh: new Audio("https://www.dropbox.com/scl/fi/1gfbsxrkpm54t31xflew0/echo4b.mp3?rlkey=q15vmzruc3pqsuh78k6gx3dqy&st=v5hcwffb&raw=1"),
+    errorMask: new Audio("https://www.dropbox.com/scl/fi/h3ogy4mf4auxy2718ris0/fnaf-button-error-made-with-Voicemod.mp3?rlkey=x0q5m62yvjkd4pree4v1seq69&st=bwnxr4mq&raw=1")
 };
 
 let gameState = {
@@ -226,7 +235,9 @@ let gameState = {
     time: 0, uncleActive: false, uncleAmbush: false, gameOver: false,
     windUpTimer: null, tabletTimeInOffice: 0, phoneCallActive: false,
     canWindByTap: true, isHoldingWind: false,
-    adminHoldTimer: null, godMode: false, isBoxEmpty: false
+    adminHoldTimer: null, godMode: false, isBoxEmpty: false,
+    uncleCooldown: false, gameWon: false,
+    zomBoyActive: false, zomBoyInOffice: false, zomBoyCooldown: false
 };
 
 window.onload = () => {
@@ -268,8 +279,12 @@ function startNewGame() {
 
 function continueGame() { 
     let night = parseInt(localStorage.getItem('uncleNight')) || 1;
-    if (night >= 3) document.getElementById('dev-popup').style.display = 'block'; 
-    else initiateNight(night); 
+    if (night >= 4) {
+        document.getElementById('dev-popup-text').innerText = "4 ночь в разработке, спасибо за игру! Ожидайте постов в тг канале штв, постараемся как можно скорее выпустить обновление 0.20V.";
+        document.getElementById('dev-popup').style.display = 'block'; 
+    } else {
+        initiateNight(night); 
+    }
 }
 
 function closeDevPopup() { document.getElementById('dev-popup').style.display = 'none'; }
@@ -285,9 +300,11 @@ function initiateNight(n) {
 }
 
 function startNight() {
-    gameState.gameOver = false; gameState.time = 0; gameState.boxValue = 100;
+    gameState.gameOver = false; gameState.gameWon = false; gameState.time = 0; gameState.boxValue = 100;
     gameState.uncleActive = false; gameState.uncleAmbush = false; gameState.godMode = false;
-    gameState.isBoxEmpty = false;
+    gameState.isBoxEmpty = false; gameState.uncleCooldown = false;
+    gameState.zomBoyActive = false; gameState.zomBoyInOffice = false; gameState.zomBoyCooldown = false;
+    
     document.getElementById('office-screen').style.display = 'flex';
     document.getElementById('office-screen').style.backgroundImage = `url(${ASSETS.office})`;
     document.getElementById('office-screen').style.opacity = '1';
@@ -297,6 +314,7 @@ function startNight() {
     SOUNDS.fan.loop = true; SOUNDS.fan.play();
 
     if (gameState.night === 2) playNight2Intro();
+    if (gameState.night === 3) playNight3Intro();
 
     let gameTimer = setInterval(() => {
         if (gameState.gameOver) return clearInterval(gameTimer);
@@ -316,19 +334,30 @@ function startNight() {
         }
     }, 100);
 
-    if (gameState.night === 2) {
-        setTimeout(() => {
-            if (!gameState.gameOver) spawnUncle();
-            setInterval(() => {
-                if (!gameState.gameOver && !gameState.uncleActive) spawnUncle();
-            }, 35000);
-        }, 110000);
-    } else {
-        setInterval(() => {
-            if (gameState.gameOver || gameState.uncleActive || gameState.godMode) return;
-            if (Math.random() < 0.4) spawnUncle();
-        }, 16000);
-    }
+    // ДЯДЬКА ЛОГИКА
+    let uncleStartTime = 0;
+    if (gameState.night === 2) uncleStartTime = 110; 
+    if (gameState.night >= 3) uncleStartTime = 120; 
+
+    setInterval(() => {
+        if (gameState.gameOver || gameState.uncleActive || gameState.godMode || gameState.uncleCooldown) return;
+        if (gameState.night >= 2 && gameState.time < uncleStartTime) return;
+
+        if (gameState.night === 1) {
+             if (gameState.time > 1 && gameState.time % 16 === 0 && Math.random() < 0.4) spawnUncle();
+        } else {
+             spawnUncle();
+        }
+    }, 1000);
+
+    // ЗОМБОЙ ЛОГИКА (Перезарядка 40 секунд)
+    setInterval(() => {
+        if (gameState.gameOver || gameState.godMode || gameState.zomBoyInOffice || gameState.zomBoyActive || gameState.zomBoyCooldown) return;
+        if (gameState.night >= 3 && gameState.time >= 105) { 
+             // Шанс появления больше (0.7 вместо 0.4)
+             if (Math.random() < 0.7) spawnZomBoy();
+        }
+    }, 5000); 
 
     setInterval(() => {
         if (gameState.uncleActive && gameState.isTabletUp && !gameState.gameOver && !gameState.godMode) {
@@ -405,6 +434,12 @@ function windUpAction(amount) {
 
 function toggleMask() {
     if (gameState.gameOver || gameState.isTabletUp) return;
+    if (gameState.zomBoyInOffice) {
+        SOUNDS.errorMask.currentTime = 0; 
+        SOUNDS.errorMask.play();
+        return;
+    }
+    
     gameState.isMaskOn = !gameState.isMaskOn;
     const mask = document.getElementById('mask-img');
     if (gameState.isMaskOn) {
@@ -444,8 +479,18 @@ function spawnUncle() {
     if (gameState.godMode) return;
     gameState.uncleActive = true;
     const office = document.getElementById('office-screen');
-    office.style.backgroundImage = `url(${ASSETS.officeEvil})`;
-    SOUNDS.static.loop = true; SOUNDS.static.play();
+    
+    // Новая логика картинки: если ЗомБой уже в офисе
+    if (gameState.zomBoyInOffice) {
+        office.style.backgroundImage = `url(${ASSETS.zomBoyAndUncle})`;
+    } else {
+        office.style.backgroundImage = `url(${ASSETS.officeEvil})`;
+    }
+    
+    SOUNDS.static.currentTime = 0; 
+    SOUNDS.static.loop = true; 
+    SOUNDS.static.play();
+    
     if (Math.random() < 0.5) SOUNDS.uncleVoice1.play(); else SOUNDS.uncleVoice2.play();
 
     setTimeout(() => { if (!gameState.isMaskOn) gameState.uncleAmbush = true; }, 2500);
@@ -460,19 +505,64 @@ function spawnUncle() {
             office.style.filter = 'brightness(0)'; 
             office.style.opacity = '0'; 
             setTimeout(() => {
-                office.style.backgroundImage = `url(${ASSETS.office})`;
+                office.style.backgroundImage = gameState.zomBoyInOffice ? `url(${ASSETS.zomBoyOffice})` : `url(${ASSETS.office})`;
                 office.style.opacity = '1'; office.style.filter = 'brightness(1)';
+                
                 gameState.uncleActive = false;
+                if (gameState.night >= 2) {
+                    gameState.uncleCooldown = true;
+                    setTimeout(() => { gameState.uncleCooldown = false; }, 20000);
+                }
+                
                 if (gameState.uncleAmbush && !gameState.godMode) jumpscare('uncle');
             }, 2000);
         }
     }, 100);
 }
 
+function spawnZomBoy() {
+    if (gameState.zomBoyActive || gameState.zomBoyCooldown) return;
+    gameState.zomBoyActive = true;
+    SOUNDS.zomHello.currentTime = 0;
+    SOUNDS.zomHello.play();
+    
+    setTimeout(() => {
+        if (gameState.isMaskOn) {
+            setTimeout(() => {
+                if (gameState.isMaskOn) {
+                    SOUNDS.zomBye.currentTime = 0;
+                    SOUNDS.zomBye.play();
+                    gameState.zomBoyActive = false;
+                    startZomBoyCooldown(); // Перезарядка 40 сек
+                } else {
+                    failZomBoy(); 
+                }
+            }, 3000);
+        } else {
+            failZomBoy(); 
+        }
+    }, 3000);
+}
+
+function failZomBoy() {
+    gameState.zomBoyActive = false;
+    gameState.zomBoyInOffice = true;
+    document.getElementById('office-screen').style.backgroundImage = `url(${ASSETS.zomBoyOffice})`;
+    SOUNDS.zomLaugh.loop = true;
+    SOUNDS.zomLaugh.play();
+    startZomBoyCooldown(); // Перезарядка 40 сек даже если он вошел
+}
+
+function startZomBoyCooldown() {
+    gameState.zomBoyCooldown = true;
+    setTimeout(() => {
+        gameState.zomBoyCooldown = false;
+    }, 40000);
+}
+
 function triggerBoxEnd() {
     if(gameState.godMode) return;
     
-    // Планшет меняется НАВСЕГДА и кнопка ИСЧЕЗАЕТ
     document.getElementById('tablet-img').src = ASSETS.tabletEmpty;
     document.getElementById('wind-up-btn').style.display = 'none';
     
@@ -488,7 +578,6 @@ function jumpscare(type) {
     if (gameState.gameOver || gameState.godMode) return;
     gameState.gameOver = true;
 
-    // ПРИНУДИТЕЛЬНО ОПУСКАЕМ МАСКУ И ПЛАНШЕТ
     document.getElementById('mask-img').style.top = '-100%';
     document.getElementById('tablet-img').style.bottom = '-100%';
     document.getElementById('music-box-ui').style.display = 'none';
@@ -511,6 +600,8 @@ function jumpscare(type) {
 }
 
 function winGame() {
+    if (gameState.gameWon) return; 
+    gameState.gameWon = true;
     gameState.gameOver = true;
     Object.values(SOUNDS).forEach(s => { s.pause(); s.currentTime = 0; });
     
@@ -553,6 +644,29 @@ function playNight2Intro() {
             }, 61000);
         }, 25000);
     }, 10000);
+}
+
+function playNight3Intro() {
+    gameState.phoneCallActive = true;
+    let ringCount = 0;
+    let ringInterval = setInterval(() => {
+        SOUNDS.phoneRing3.currentTime = 0;
+        SOUNDS.phoneRing3.play();
+        ringCount++;
+        if (ringCount >= 3) {
+            clearInterval(ringInterval);
+            setTimeout(() => {
+                SOUNDS.phonePickUp.play();
+                setTimeout(() => {
+                    SOUNDS.phoneVoice3.play();
+                    setTimeout(() => {
+                        SOUNDS.phonePickUp.play(); 
+                        gameState.phoneCallActive = false;
+                    }, 97000);
+                }, 1000);
+            }, 1000); 
+        }
+    }, 1200);
 }
 </script>
 </body>
