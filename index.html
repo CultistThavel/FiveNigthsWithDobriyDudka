@@ -27,22 +27,36 @@
 
         #main-menu { 
             z-index: 80; 
-            background: url('https://www.dropbox.com/scl/fi/wsrrhafrks34plq6p336r/Picsart_26-03-08_15-39-55-759.jpg?rlkey=ga1i4khj0efa4fmlp7afg6an7&st=y2ozqhqi&raw=1') no-repeat center center;
+            background: url('https://www.dropbox.com/scl/fi/2da3r11mkkp82assw6ws1/Picsart_26-03-09_12-50-46-259.jpg?rlkey=p7p8jqcj140y821wkxgeugnxp&st=8r2qauzb&raw=1') no-repeat center center;
             background-size: contain; 
         }
         .menu-btn-container { position: absolute; left: 5%; bottom: 15%; display: flex; flex-direction: column; align-items: flex-start; }
         
-        #star-icon {
+        .stars-container { display: flex; margin-bottom: 10px; margin-left: 80px; }
+        .star-icon {
             display: none; width: 40px; height: 40px; background: white;
             clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-            margin-bottom: 10px; margin-left: 80px;
+            margin-right: 5px;
         }
 
         .menu-btn { 
             background: white; color: black; border: none; padding: 10px 40px; 
             font-size: 20px; font-weight: bold; margin-bottom: 10px; cursor: pointer; width: 200px;
         }
+        #btn-custom-night { height: 80px; font-size: 22px; display: none; }
         .night-text { color: white; font-size: 16px; margin-top: -5px; margin-bottom: 10px; }
+
+        /* Custom Night UI */
+        #custom-night-screen { z-index: 85; background: black; flex-direction: column; }
+        .cn-title { font-size: 30px; font-weight: bold; margin-bottom: 20px; }
+        .cn-grid { display: flex; gap: 20px; margin-bottom: 30px; }
+        .cn-char { display: flex; flex-direction: column; align-items: center; }
+        .cn-icon { width: 80px; height: 80px; border: 2px solid white; margin-bottom: 10px; }
+        .cn-controls { display: flex; align-items: center; gap: 10px; }
+        .cn-btn { width: 30px; height: 30px; background: white; color: black; font-weight: bold; border: none; cursor: pointer; font-size: 18px; }
+        .cn-val { font-size: 24px; font-weight: bold; width: 30px; }
+        .cn-actions { display: flex; gap: 20px; }
+        .cn-action-btn { background: white; color: black; padding: 15px 30px; font-size: 18px; font-weight: bold; border: none; cursor: pointer; }
 
         #office-screen { 
             z-index: 10; 
@@ -101,13 +115,19 @@
         #time-display { position: absolute; top: 10px; right: 10px; font-size: 24px; font-weight: bold; z-index: 70; }
         #night-display { position: absolute; top: 40px; right: 10px; font-size: 18px; z-index: 70; }
 
-        #transition-screen { z-index: 150; background: black; display: none; color: white; font-size: 30px; }
+        #transition-screen { z-index: 150; background: black; display: none; color: white; font-size: 30px; transition: opacity 0.5s; }
         
         #win-6am-text {
             font-size: 60px; font-weight: 900; color: white; display: none; z-index: 400;
             text-shadow: 2px 2px 0px #555; font-family: 'Courier New', Courier, monospace;
             transition: opacity 1.5s ease-in-out; opacity: 0;
         }
+        
+        #ending-screen {
+            position: absolute; width: 100%; height: 100%; z-index: 450; display: none; background: black;
+            justify-content: center; align-items: center;
+        }
+        #ending-img { width: 100%; height: 100%; object-fit: contain; opacity: 0; transition: opacity 2s ease-in-out; }
 
         #dev-popup {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -129,6 +149,8 @@
             width: 100%; margin-bottom: 15px; padding: 15px; background: #444; color: white; border: 2px solid #0f0;
             font-weight: bold; cursor: pointer; font-size: 16px;
         }
+        
+        #preload-images { display: none; }
     </style>
 </head>
 <body>
@@ -147,10 +169,49 @@
 
     <div id="main-menu" class="screen">
         <div class="menu-btn-container">
-            <div id="star-icon"></div>
+            <div class="stars-container">
+                <div id="star-icon-1" class="star-icon"></div>
+                <div id="star-icon-2" class="star-icon"></div>
+            </div>
             <button class="menu-btn" onclick="startNewGame()">Новая Игра</button>
             <button id="btn-continue" class="menu-btn" style="display:none;" onclick="continueGame()">Продолжить</button>
             <div id="continue-night-text" class="night-text" style="display:none;">1 Ночь</div>
+            <button id="btn-custom-night" class="menu-btn" onclick="openCustomNight()">Личная Ночь</button>
+        </div>
+    </div>
+    
+    <div id="custom-night-screen" class="screen">
+        <div class="cn-title">Личная Ночь</div>
+        <div class="cn-grid">
+            <div class="cn-char">
+                <img src="https://www.dropbox.com/scl/fi/blqc1b1hus9ayfzz5see1/Picsart_26-03-08_22-40-48-999.png?rlkey=h7g82cz3a2aip4alqqp05hhe9&st=l1t1dmhr&raw=1" class="cn-icon">
+                <div class="cn-controls">
+                    <button class="cn-btn" onpointerdown="startAdjust('uncle', -1)" onpointerup="stopAdjust()" onpointerleave="stopAdjust()">◄</button>
+                    <div id="ai-val-uncle" class="cn-val">0</div>
+                    <button class="cn-btn" onpointerdown="startAdjust('uncle', 1)" onpointerup="stopAdjust()" onpointerleave="stopAdjust()">►</button>
+                </div>
+            </div>
+            <div class="cn-char">
+                <img src="https://www.dropbox.com/scl/fi/ubgcje5evfhisi89q6e7c/Picsart_26-03-08_22-39-39-914.png?rlkey=i3mnzo9q1ojgjdryeimi4016x&st=r03usc6z&raw=1" class="cn-icon">
+                <div class="cn-controls">
+                    <button class="cn-btn" onpointerdown="startAdjust('rabbit', -1)" onpointerup="stopAdjust()" onpointerleave="stopAdjust()">◄</button>
+                    <div id="ai-val-rabbit" class="cn-val">0</div>
+                    <button class="cn-btn" onpointerdown="startAdjust('rabbit', 1)" onpointerup="stopAdjust()" onpointerleave="stopAdjust()">►</button>
+                </div>
+            </div>
+            <div class="cn-char">
+                <img src="https://www.dropbox.com/scl/fi/i4fdy9nzpa4492o8jws26/Picsart_26-03-08_22-40-09-936.jpg?rlkey=llql2otnqlv9m6vjzchqrz3l4&st=5hdots2l&raw=1" class="cn-icon">
+                <div class="cn-controls">
+                    <button class="cn-btn" onpointerdown="startAdjust('zomboy', -1)" onpointerup="stopAdjust()" onpointerleave="stopAdjust()">◄</button>
+                    <div id="ai-val-zomboy" class="cn-val">0</div>
+                    <button class="cn-btn" onpointerdown="startAdjust('zomboy', 1)" onpointerup="stopAdjust()" onpointerleave="stopAdjust()">►</button>
+                </div>
+            </div>
+        </div>
+        <div class="cn-actions">
+            <button class="cn-action-btn" onclick="startCustomNightGame()">Начать</button>
+            <button class="cn-action-btn" onclick="setSleepyNight()">Сонная Ночь</button>
+            <button class="cn-action-btn" onclick="closeCustomNight()">Главное Меню</button>
         </div>
     </div>
 
@@ -178,10 +239,14 @@
     <div id="win-screen" class="screen" style="background: transparent; z-index: 400;">
         <div id="win-6am-text">6:00</div>
     </div>
+    
+    <div id="ending-screen">
+        <img id="ending-img" src="https://www.dropbox.com/scl/fi/5st4d2nmljazs6aqq6gvn/87_20260309120746.png?rlkey=tjd3496v5825mxgbofan2syuf&st=vu1v33wn&raw=1">
+    </div>
 
     <div id="dev-popup">
-        <p id="dev-popup-text">5 ночь в разработке, спасибо за игру! Следите за постами в тг канале «ШТВ» Постараемся как можно скорее выпустить 5 ночь и остальные новые функции.</p>
-        <button id="dev-popup-btn" onclick="closeDevPopup()" style="background: red; color: white; padding: 10px 30px; border: 2px solid black; font-weight: bold;">Ясно.</button>
+        <p id="dev-popup-text">6 ночь в разработке, спасибо за игру! Следите за тг каналом «ШТВ» Чтобы знать о всех будущих обновлениях. В скором времени, выпустим 6 ночь, сейчас мне лень ._.</p>
+        <button id="dev-popup-btn" onclick="closeDevPopup()" style="background: red; color: white; padding: 10px 30px; border: 2px solid black; font-weight: bold;">Ясно</button>
     </div>
 
     <div id="admin-cube">Админ Панель 1.6V<br>@Xn1ckname</div>
@@ -189,6 +254,11 @@
         <button class="admin-btn" onclick="set5AM()">5:00 Утра</button>
         <button class="admin-btn" onclick="setGodMode()">Бессмертие</button>
         <button onclick="document.getElementById('admin-panel-ui').style.display='none'" style="margin-top:10px; background:red; color:white; border:none; padding:10px 20px; font-weight:bold; cursor:pointer;">Закрыть</button>
+    </div>
+    
+    <div id="preload-images">
+        <img src="https://www.dropbox.com/scl/fi/zdwojmpsz3mf2ie4f1jwj/Picsart_26-02-25_19-10-33-922.png?rlkey=e4l9uktjlvtl7h4du0v7gmluc&raw=1">
+        <img src="https://www.dropbox.com/scl/fi/3eur27q9f2p7ute1png7r/Picsart_26-03-03_12-22-39-720.png?rlkey=rbeioyze6j2qxoaaspe80xis9&raw=1">
     </div>
 </div>
 
@@ -207,6 +277,8 @@ const ASSETS = {
 const SOUNDS = {
     menuMusic: new Audio("https://www.dropbox.com/scl/fi/0mor81ssu6479twq1eoe7/1-02.-FNaF-1-Main-Menu.mp3?rlkey=wtn1lnlq67loejqi9rjq4cd7a&raw=1"),
     click: new Audio("https://www.dropbox.com/scl/fi/uj9r8sercw7i9jclfsnw1/Blip3.mp3?rlkey=j3696ja6et3o97anj3nulgvmp&raw=1"),
+    cnCoin: new Audio("https://www.dropbox.com/scl/fi/rbm85rpjt5q4qde8bn0m2/54.-Miscellaneous-SFX-Coin.mp3?rlkey=mfs2ebysaoldeoiaylkf1pnvn&st=lh8rku82&raw=1"),
+    cnMusic: new Audio("https://www.dropbox.com/scl/fi/au5593fc64ug0g92ji5d9/1-01.-Eisoptrophobia.mp3?rlkey=8lnfajiadsmusqt4v53v7qz2z&st=dz2b8p4l&raw=1"),
     startSound: new Audio("https://www.dropbox.com/scl/fi/a3ljy9jnn59z240gpnhc8/fnaf-3-start-sound.mp3?rlkey=ytc3q4zcezvakgh6b3j3mhww0&raw=1"),
     space: new Audio("https://www.dropbox.com/scl/fi/ydpjtx0tsg3cyoc53xkje/03.-Music-Track-Scary-Space.mp3?rlkey=i6akwkd0y0m03lsj5vynnmbgh&raw=1"),
     fan: new Audio("https://www.dropbox.com/scl/fi/b535jgn11ynl89bbizl4k/11.-Office-Fan.mp3?rlkey=6gzeo2amxejpnoiq91w6s8l3o&raw=1"),
@@ -233,10 +305,12 @@ const SOUNDS = {
     phonePickUp: new Audio("https://www.dropbox.com/scl/fi/b9ea9x3zuxvhq2ox6d7vf/fnaf-1-phone-pick-up-made-with-Voicemod.mp3?rlkey=ffpjdf0fetlzep2407hjth1bq&st=yi1wvv6s&raw=1"),
     phoneVoice3: new Audio("https://www.dropbox.com/scl/fi/2f08rc53n58s944fwuvw1/1cf1f977cc746dc79e4059fc1aa5a425.mp3?rlkey=v4da3dys2806az3owvsg7gogl&st=1ali09ok&raw=1"),
     phoneVoice4: new Audio("https://www.dropbox.com/scl/fi/n3ss84z8lbuwd3q9ap8cv/133661a39b012e9f20e8ec4aa120c267.mp3?rlkey=c6glii6we2afp8of2jlwxze3r&st=u802rcil&raw=1"),
+    phoneVoice5: new Audio("https://www.dropbox.com/scl/fi/1wnapdmq5anc2iy3wkyml/0ae74e9934b5bbd32fc9ffff8c9cf1f1.mp3?rlkey=pemjis41dxzsc4y1xcfnqn2vi&st=55yjdavj&raw=1"),
     zomHello: new Audio("https://www.dropbox.com/scl/fi/bjjgezcjojhgd3erbfe50/FNAF-Balloon-Boy-Hello-QuickSounds.com.mp3?rlkey=3h8gimsg0ghoex92vj4ddjke3&st=86g786vl&raw=1"),
     zomBye: new Audio("https://www.dropbox.com/scl/fi/752t7l4l56q9i0tq421jf/balloon-boy-bye-bye-made-with-Voicemod.mp3?rlkey=9vvoo02dqedelv4beor4405lf&st=awidgw43&raw=1"),
     zomLaugh: new Audio("https://www.dropbox.com/scl/fi/1gfbsxrkpm54t31xflew0/echo4b.mp3?rlkey=q15vmzruc3pqsuh78k6gx3dqy&st=v5hcwffb&raw=1"),
-    errorMask: new Audio("https://www.dropbox.com/scl/fi/h3ogy4mf4auxy2718ris0/fnaf-button-error-made-with-Voicemod.mp3?rlkey=x0q5m62yvjkd4pree4v1seq69&st=bwnxr4mq&raw=1")
+    errorMask: new Audio("https://www.dropbox.com/scl/fi/h3ogy4mf4auxy2718ris0/fnaf-button-error-made-with-Voicemod.mp3?rlkey=x0q5m62yvjkd4pree4v1seq69&st=bwnxr4mq&raw=1"),
+    endingMusic: new Audio("https://www.dropbox.com/scl/fi/dc0tdlybzmf6x7cjtasvp/fnaf-1-music-box-full-version-freddy-fazbear-made-with-Voicemod.mp3?rlkey=xfri0rzprtt9up89ab0s72vhz&st=1z9bqnqd&raw=1")
 };
 
 let gameState = {
@@ -246,7 +320,9 @@ let gameState = {
     canWindByTap: true, isHoldingWind: false,
     adminHoldTimer: null, godMode: false, isBoxEmpty: false,
     uncleCooldown: false, gameWon: false,
-    zomBoyActive: false, zomBoyInOffice: false, zomBoyCooldown: false
+    zomBoyActive: false, zomBoyInOffice: false, zomBoyCooldown: false,
+    customNightLevels: { uncle: 0, rabbit: 0, zomboy: 0 },
+    adjustTimer: null
 };
 
 window.onload = () => {
@@ -274,7 +350,8 @@ document.getElementById('disclaimer-screen').onclick = () => {
 
 function updateMenuButtons() {
     let savedNight = parseInt(localStorage.getItem('uncleNight')) || 1;
-    let hasStar = localStorage.getItem('uncleStar') === 'true';
+    let hasStar1 = localStorage.getItem('uncleStar') === 'true';
+    let hasStar2 = localStorage.getItem('uncleStar2') === 'true';
     
     if (savedNight > 1) {
         document.getElementById('btn-continue').style.display = 'block';
@@ -282,23 +359,73 @@ function updateMenuButtons() {
         document.getElementById('continue-night-text').innerText = `${savedNight} Ночь`;
     }
     
-    if (hasStar) {
-        document.getElementById('star-icon').style.display = 'block';
+    if (hasStar1) document.getElementById('star-icon-1').style.display = 'block';
+    if (hasStar2) document.getElementById('star-icon-2').style.display = 'block';
+    
+    if (savedNight >= 6) {
+        document.getElementById('btn-custom-night').style.display = 'block';
     }
 }
 
 function startNewGame() { 
     localStorage.setItem('uncleNight', 1); 
+    localStorage.removeItem('uncleStar');
+    localStorage.removeItem('uncleStar2');
+    document.getElementById('star-icon-1').style.display = 'none';
+    document.getElementById('star-icon-2').style.display = 'none';
+    document.getElementById('btn-custom-night').style.display = 'none';
     initiateNight(1); 
 }
 
 function continueGame() { 
     let night = parseInt(localStorage.getItem('uncleNight')) || 1;
-    if (night >= 5) {
+    if (night >= 6) {
         document.getElementById('dev-popup').style.display = 'block'; 
     } else {
         initiateNight(night); 
     }
+}
+
+function openCustomNight() {
+    SOUNDS.menuMusic.pause();
+    document.getElementById('main-menu').style.display = 'none';
+    document.getElementById('custom-night-screen').style.display = 'flex';
+    document.getElementById('custom-night-screen').style.opacity = '0';
+    setTimeout(() => { document.getElementById('custom-night-screen').style.transition = 'opacity 0.5s'; document.getElementById('custom-night-screen').style.opacity = '1'; }, 50);
+    SOUNDS.cnMusic.loop = true; SOUNDS.cnMusic.play();
+}
+
+function closeCustomNight() {
+    SOUNDS.cnMusic.pause(); SOUNDS.cnMusic.currentTime = 0;
+    document.getElementById('custom-night-screen').style.display = 'none';
+    document.getElementById('main-menu').style.display = 'flex';
+    SOUNDS.menuMusic.play();
+}
+
+function startAdjust(char, dir) {
+    adjustAI(char, dir);
+    gameState.adjustTimer = setInterval(() => adjustAI(char, dir), 150);
+}
+function stopAdjust() { clearInterval(gameState.adjustTimer); }
+function adjustAI(char, dir) {
+    let val = gameState.customNightLevels[char] + dir;
+    if (val >= 0 && val <= 20) {
+        gameState.customNightLevels[char] = val;
+        document.getElementById(`ai-val-${char}`).innerText = val;
+        SOUNDS.cnCoin.currentTime = 0; SOUNDS.cnCoin.play();
+    }
+}
+function setSleepyNight() {
+    SOUNDS.cnCoin.currentTime = 0; SOUNDS.cnCoin.play();
+    ['uncle', 'rabbit', 'zomboy'].forEach(char => {
+        gameState.customNightLevels[char] = 20;
+        document.getElementById(`ai-val-${char}`).innerText = 20;
+    });
+}
+function startCustomNightGame() {
+    SOUNDS.cnMusic.pause(); SOUNDS.cnMusic.currentTime = 0;
+    document.getElementById('custom-night-screen').style.display = 'none';
+    initiateNight(7);
 }
 
 function closeDevPopup() { document.getElementById('dev-popup').style.display = 'none'; }
@@ -310,16 +437,20 @@ function initiateNight(n) {
     const trans = document.getElementById('transition-screen');
     trans.style.display = 'flex';
     
-    // Белый текст для 4 ночи
     const transText = document.getElementById('trans-text');
     transText.innerText = `${n} Ночь`;
-    transText.style.color = (n === 4) ? "white" : "white"; // Всегда белый по просьбе
+    transText.style.color = "white";
 
     setTimeout(() => { 
         trans.style.display = 'none'; 
         startNight(); 
     }, 4000);
 }
+
+// AI TIMINGS FOR CUSTOM NIGHT 1-20
+const UNCLE_CN = [0, 45, 44, 43, 42, 40, 38, 36, 34, 32, 28, 26, 24, 22, 19, 17, 16, 15, 14, 13, 11];
+const RABBIT_CN = [0, 32, 31, 29, 28, 27, 26, 25, 24, 23, 22, 20, 18, 17, 16, 14, 13, 12, 11, 9, 8];
+const ZOMBOY_CN = [0, 50, 47, 45, 44, 42, 40, 38, 36, 34, 32, 30, 28, 26, 24, 20, 18, 17, 16, 15, 14];
 
 function startNight() {
     gameState.gameOver = false; gameState.gameWon = false; gameState.time = 0; gameState.boxValue = 100;
@@ -338,6 +469,7 @@ function startNight() {
     if (gameState.night === 2) playNight2Intro();
     if (gameState.night === 3) playNight3Intro();
     if (gameState.night === 4) playNight4Intro();
+    if (gameState.night === 5) playNight5Intro();
 
     let gameTimer = setInterval(() => {
         if (gameState.gameOver) return clearInterval(gameTimer);
@@ -347,11 +479,17 @@ function startNight() {
         if (hours >= 6) { winGame(); clearInterval(gameTimer); }
     }, 1000);
 
+    // DRAIN LOGIC
     setInterval(() => {
         if (gameState.gameOver || gameState.godMode) return;
         let drain = 0.67; 
         if (gameState.night === 2 || gameState.night === 3) drain = 0.91;
-        if (gameState.night === 4) drain = 1.0; // Разрядка 10 сек
+        if (gameState.night === 4 || gameState.night === 5) drain = 1.0; 
+        if (gameState.night === 7) {
+            let lvl = gameState.customNightLevels.rabbit;
+            if (lvl === 0) return; 
+            drain = 100 / (RABBIT_CN[lvl] * 10); 
+        }
         
         gameState.boxValue = Math.max(0, gameState.boxValue - drain);
         updateMusicCircle();
@@ -364,14 +502,18 @@ function startNight() {
     setInterval(() => {
         if (gameState.gameOver || gameState.uncleActive || gameState.godMode || gameState.uncleCooldown) return;
         
-        // В 4 ночи враги ждут 1:15 (75 сек)
-        let safeTime = (gameState.night === 4) ? 75 : (gameState.night === 2 ? 110 : 120);
-        if (gameState.night >= 2 && gameState.time < safeTime) return;
+        let safeTime = (gameState.night === 4 || gameState.night === 5) ? 65 : (gameState.night === 2 ? 110 : 120);
+        if (gameState.night >= 2 && gameState.night < 7 && gameState.time < safeTime) return;
 
         if (gameState.night === 1) {
              if (gameState.time > 1 && gameState.time % 16 === 0 && Math.random() < 0.4) spawnUncle();
         } else if (gameState.night === 4) {
-             if (gameState.time % 15 === 0) spawnUncle(); // Каждые 15 сек
+             if (gameState.time % 15 === 0) spawnUncle();
+        } else if (gameState.night === 5) {
+             if (gameState.time % 13 === 0) spawnUncle();
+        } else if (gameState.night === 7) {
+             let lvl = gameState.customNightLevels.uncle;
+             if (lvl > 0 && gameState.time % UNCLE_CN[lvl] === 0) spawnUncle();
         } else {
              spawnUncle();
         }
@@ -381,18 +523,22 @@ function startNight() {
     setInterval(() => {
         if (gameState.gameOver || gameState.godMode || gameState.zomBoyInOffice || gameState.zomBoyActive || gameState.zomBoyCooldown) return;
         
-        let safeTime = (gameState.night === 4) ? 75 : 105;
-        if (gameState.night >= 3 && gameState.time >= safeTime) { 
-             let chance = (gameState.night === 4) ? 1.0 : 0.7;
-             let interval = (gameState.night === 4) ? 18 : 5;
+        let safeTime = (gameState.night >= 4 && gameState.night < 7) ? 65 : 105;
+        if (gameState.night >= 3 && gameState.night < 7 && gameState.time >= safeTime) { 
+             let chance = (gameState.night === 4 || gameState.night === 5) ? 1.0 : 0.7;
              
              if (gameState.night === 4) {
                  if (gameState.time % 18 === 0) spawnZomBoy();
+             } else if (gameState.night === 5) {
+                 if (gameState.time % 16 === 0) spawnZomBoy();
              } else {
                  if (Math.random() < chance) spawnZomBoy();
              }
+        } else if (gameState.night === 7) {
+            let lvl = gameState.customNightLevels.zomboy;
+            if (lvl > 0 && gameState.time % ZOMBOY_CN[lvl] === 0) spawnZomBoy();
         }
-    }, (gameState.night === 4 ? 1000 : 5000)); 
+    }, 1000); 
 
     setInterval(() => {
         if (gameState.uncleActive && gameState.isTabletUp && !gameState.gameOver && !gameState.godMode) {
@@ -439,10 +585,15 @@ btnMask.onclick = toggleMask;
 document.getElementById('btn-tablet').onclick = toggleTablet;
 
 const windBtn = document.getElementById('wind-up-btn');
+let lastWindTime = 0;
 windBtn.addEventListener('pointerdown', (e) => {
     if (gameState.gameOver) return;
+    let now = Date.now();
+    if (now - lastWindTime < 500) return; // 500ms cooldown for taps
+    
     if (gameState.canWindByTap) {
         windUpAction(10);
+        lastWindTime = now;
         gameState.canWindByTap = false;
         setTimeout(() => { gameState.canWindByTap = true; }, 500);
     }
@@ -473,11 +624,11 @@ function toggleMask() {
     gameState.isMaskOn = !gameState.isMaskOn;
     const mask = document.getElementById('mask-img');
     if (gameState.isMaskOn) {
-        mask.style.top = '0'; SOUNDS.maskOn.play();
+        mask.style.top = '0'; SOUNDS.maskOn.currentTime = 0; SOUNDS.maskOn.play();
         SOUNDS.breathing.loop = true; SOUNDS.breathing.play();
         document.getElementById('btn-tablet').style.visibility = 'hidden';
     } else {
-        mask.style.top = '-100%'; SOUNDS.maskOff.play();
+        mask.style.top = '-100%'; SOUNDS.maskOff.currentTime = 0; SOUNDS.maskOff.play();
         SOUNDS.breathing.pause();
         document.getElementById('btn-tablet').style.visibility = 'visible';
     }
@@ -530,7 +681,7 @@ function spawnUncle() {
                 office.style.opacity = '1'; office.style.filter = 'brightness(1)';
                 gameState.uncleActive = false;
                 
-                let cd = (gameState.night === 4) ? 15000 : 20000;
+                let cd = (gameState.night === 4) ? 15000 : (gameState.night === 5 ? 13000 : 20000);
                 if (gameState.night >= 2) {
                     gameState.uncleCooldown = true;
                     setTimeout(() => { gameState.uncleCooldown = false; }, cd);
@@ -569,7 +720,7 @@ function failZomBoy() {
 
 function startZomBoyCooldown() {
     gameState.zomBoyCooldown = true;
-    let cd = (gameState.night === 4) ? 18000 : 40000;
+    let cd = (gameState.night === 4) ? 18000 : (gameState.night === 5 ? 16000 : 40000);
     setTimeout(() => { gameState.zomBoyCooldown = false; }, cd);
 }
 
@@ -610,19 +761,40 @@ function winGame() {
     const flash = document.getElementById('flash-overlay');
     flash.style.background = 'black'; flash.style.display = 'block'; flash.style.opacity = '1';
     document.getElementById('office-screen').style.display = 'none';
+    
     setTimeout(() => {
         const winScreen = document.getElementById('win-screen');
         const winText = document.getElementById('win-6am-text');
         winScreen.style.display = 'flex'; winText.style.display = 'block';
         SOUNDS.clock.play();
         setTimeout(() => { winText.style.opacity = "1"; }, 100);
-        setTimeout(() => {
-            let nextNight = gameState.night + 1;
-            localStorage.setItem('uncleNight', nextNight);
-            if (gameState.night === 4) localStorage.setItem('uncleStar', 'true');
-            location.reload(); 
-        }, 9000); 
+        
+        if (gameState.night === 5) {
+            setTimeout(() => {
+                winScreen.style.display = 'none';
+                document.getElementById('ending-screen').style.display = 'flex';
+                SOUNDS.endingMusic.play();
+                setTimeout(() => { document.getElementById('ending-img').style.opacity = '1'; }, 100);
+                setTimeout(() => {
+                    document.getElementById('ending-screen').style.transition = 'opacity 2s';
+                    document.getElementById('ending-screen').style.opacity = '0';
+                    setTimeout(() => finalizeWin(), 2000);
+                }, 12000);
+            }, 14000);
+        } else {
+            setTimeout(() => finalizeWin(), 9000); 
+        }
     }, 1000);
+}
+
+function finalizeWin() {
+    let nextNight = gameState.night + 1;
+    if (gameState.night < 7) {
+        localStorage.setItem('uncleNight', nextNight);
+        if (gameState.night === 4) localStorage.setItem('uncleStar', 'true');
+        if (gameState.night === 5) localStorage.setItem('uncleStar2', 'true');
+    }
+    location.reload();
 }
 
 function playNight2Intro() {
@@ -679,6 +851,28 @@ function playNight4Intro() {
         SOUNDS.phoneRing3.currentTime = 0; SOUNDS.phoneRing3.play(); ringCount++;
     }, 1200);
 }
+
+function playNight5Intro() {
+    gameState.phoneCallActive = true;
+    let ringCount = 0;
+    SOUNDS.phoneRing3.currentTime = 0; SOUNDS.phoneRing3.play(); ringCount++;
+
+    let ringInterval = setInterval(() => {
+        if (ringCount >= 3) {
+            clearInterval(ringInterval);
+            setTimeout(() => {
+                SOUNDS.phonePickUp.play();
+                setTimeout(() => {
+                    SOUNDS.phoneVoice5.play();
+                    setTimeout(() => { SOUNDS.phonePickUp.play(); gameState.phoneCallActive = false; }, 48000);
+                }, 1000);
+            }, 1000);
+            return;
+        }
+        SOUNDS.phoneRing3.currentTime = 0; SOUNDS.phoneRing3.play(); ringCount++;
+    }, 1200);
+}
 </script>
 </body>
 </html>
+
